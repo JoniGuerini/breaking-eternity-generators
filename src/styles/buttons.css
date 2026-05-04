@@ -123,20 +123,34 @@
 
 /* ---------- Modificador: hold (press & hold to confirm) ---------- */
 
-/* Preenche da esquerda pra direita conforme o usuário segura. Combina
- * com .btn--danger no caso do reset. O preenchimento é um <span> com
- * scaleX(progress) — GPU-friendly e sem reflow. */
+/*
+ * Botão "press & hold" com 2 camadas de texto + 1 de fill, ambos
+ * sincronizados pelo mesmo `progress` (0..1) vindo do React.
+ *
+ * Stacking (do fundo pra cima):
+ *   1. .btn--hold__fill        bloco coral que preenche via scaleX
+ *   2. .btn--hold__label       texto coral (cor padrão da variante danger)
+ *   3. .btn--hold__label--filled  COPIA idêntica do texto, em preto, clipada
+ *                                  pelo mesmo progresso. Onde a barra já
+ *                                  passou, esse texto preto cobre o coral —
+ *                                  dando o efeito de "letras virando preto
+ *                                  da esquerda pra direita".
+ *
+ * Os dois labels têm que ficar EXATAMENTE no mesmo lugar pra a sobreposição
+ * encaixar pixel a pixel. A camada "filled" é absoluta, ancorada no mesmo
+ * grid centralizado do botão. Ambos compartilham fonte/peso/letter-spacing
+ * via herança natural do .btn.
+ */
 .btn--hold {
   position: relative;
   overflow: hidden;
-  /* Largura mínima pra acomodar o texto "Segure pra reiniciar" sem
-   * encolher abaixo do tamanho normal do botão. */
+  /* Largura mínima pra acomodar o texto sem encolher quando entra a barra. */
   min-width: 180px;
 }
 
-/* Camada de fill — fica abaixo do label. Cor do --danger combinando
- * com a variante. Sem transição: o `progress` já é fluido pelo rAF
- * (uma transição CSS aqui causaria atraso/lag entre frames). */
+/* Camada 1: fill (fundo coral). `scaleX` é GPU-friendly e sem reflow.
+ * Sem transição: o React já manda 60fps via rAF; uma transição CSS adicionaria
+ * lag entre frames. */
 .btn--hold__fill {
   position: absolute;
   inset: 0;
@@ -147,32 +161,51 @@
   z-index: 0;
 }
 
+/* Camada 2: texto coral. Cor herdada da variante danger (que coloriria o
+ * texto inteiro). Fica acima do fill mas abaixo do "filled". */
 .btn--hold__label {
   position: relative;
   z-index: 1;
-  /* Texto fica legível em ambos os estados. Cor é controlada abaixo
-   * pelo data-holding pra inverter quando o fundo é preenchido. */
-  transition: color 0.12s ease;
 }
 
-/* Enquanto está pressionando, o botão simula seu estado "hover preenchido":
- * o texto vira a cor do fundo (vir a ser coberto pelo fill) e a borda some
- * pra dar leitura limpa do progresso. */
-.btn--hold[data-holding] .btn--hold__label {
+/*
+ * Camada 3: cópia em preto, clipada pelo progresso atual.
+ *
+ * Posicionada absolutamente sobre a camada 2, nas mesmas coordenadas
+ * (centralização do flex do .btn faz isso "de graça" — basta ocupar
+ * todo o espaço com mesmas regras de display/align).
+ *
+ * `clip-path: inset(top right bottom left)` corta as bordas: setamos
+ * `right: (1 - progress) * 100%` pra revelar só a faixa preenchida. Quando
+ * progress = 0 → right: 100% → texto totalmente cortado. Quando progress = 1
+ * → right: 0 → texto totalmente visível.
+ *
+ * Sem transição CSS pelo mesmo motivo do fill.
+ */
+.btn--hold__label--filled {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Mesma família/peso/spacing do botão — herda do .btn ancestral. */
   color: var(--bg);
+  z-index: 2;
+  pointer-events: none;
+  /* Default: invisível (clipa 100% à direita). React sobrescreve via style. */
+  clip-path: inset(0 100% 0 0);
 }
 
+/* Enquanto está em hold, fixa a borda na cor coral pra leitura limpa
+ * (evita que o hover da variante danger "preencha" o botão por trás
+ * do nosso fill). */
 .btn--hold[data-holding] {
   border-color: var(--danger);
 }
 
-/* Mantém o hover original neutralizado durante o hold pra não brigar
- * com o efeito de fill. */
+/* Neutraliza o hover da variante danger no botão hold — quem controla a
+ * cor do fundo aqui é a camada de fill, não o pseudo-classe de hover. */
 .btn--danger.btn--hold:hover:not(:disabled) {
   background: transparent;
   color: var(--danger);
-}
-
-.btn--danger.btn--hold[data-holding]:hover:not(:disabled) {
-  color: var(--bg);
 }

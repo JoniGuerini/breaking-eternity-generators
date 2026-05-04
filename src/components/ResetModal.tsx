@@ -76,16 +76,38 @@ export function ResetModal({ open, onClose }: ResetModalProps) {
             data-holding={isHolding ? 'true' : undefined}
             {...handlers}
           >
-            {/* Camada de preenchimento progressivo. `scaleX` é GPU-friendly e
-             *  não causa reflow. A largura inteira é pintada e mascarada por
-             *  `transform-origin: left`, que dá a sensação de "preencher da
-             *  esquerda pra direita". */}
+            {/*
+             * Camada de fill (fundo coral preenchendo da esquerda pra direita).
+             * `scaleX` é GPU-friendly e não causa reflow.
+             */}
             <span
               className="btn--hold__fill"
               style={{ transform: `scaleX(${progress})` }}
               aria-hidden="true"
             />
+
+            {/*
+             * Texto base — coral. Visível na parte que ainda NÃO foi coberta
+             * pela barra. Esse é o estado "default" do label.
+             */}
             <span className="btn--hold__label">Segure pra reiniciar</span>
+
+            {/*
+             * Texto sobreposto — preto. É clipado por `inset(0 (1-p)*100% 0 0)`
+             * pra revelar SÓ a parte que está sob a barra preenchida. Como o
+             * texto tem que ficar EXATAMENTE no mesmo lugar do label base
+             * (mesmo posicionamento absoluto, mesma fonte, mesmo letter-spacing),
+             * ele é uma cópia idêntica do nó acima.
+             *
+             * `aria-hidden` evita que screen readers leiam duas vezes.
+             */}
+            <span
+              className="btn--hold__label btn--hold__label--filled"
+              style={{ clipPath: `inset(0 ${(1 - progress) * 100}% 0 0)` }}
+              aria-hidden="true"
+            >
+              Segure pra reiniciar
+            </span>
           </button>
         </div>
       </div>
