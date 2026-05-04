@@ -65,7 +65,6 @@ const resource = useGameStore.getState().resource; // leitura direta
 ## Backlog (não implementado)
 
 - Buy ×10 / Buy max
-- Offline progress real (cap maior + cálculo no boot via `lastSaved`)
 - Threshold de unlock independente do custo de compra
 - Renomear "Recurso Base" pra algo temático
 - Animação sutil ao atravessar ordem de magnitude

@@ -2,6 +2,11 @@ import Decimal from 'break_eternity.js';
 import { D, SAVE_KEY, createGenerator } from './config';
 import type { GameState, SaveData } from './types';
 
+export interface LoadedGameState {
+  state: GameState;
+  lastSavedAt: number;
+}
+
 /**
  * Cria o estado inicial — 10 de Recurso Base (suficiente pra comprar 1× Gen1)
  * e a lista com Gerador 1 desbloqueado e Gerador 2 visível mas bloqueado.
@@ -37,7 +42,7 @@ export function serialize(state: GameState): SaveData {
 /**
  * Tenta carregar do localStorage. Retorna null se não houver save válido.
  */
-export function load(): GameState | null {
+export function loadWithMeta(): LoadedGameState | null {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return null;
@@ -45,20 +50,28 @@ export function load(): GameState | null {
     if (!data || data.version !== 1 || !Array.isArray(data.generators)) return null;
 
     return {
-      resource: new Decimal(data.resource ?? '0'),
-      generators: data.generators.map((g) => {
-        const gen = createGenerator(g.id, g.unlocked);
-        gen.count = new Decimal(g.count);
-        gen.purchases = g.purchases;
-        return gen;
-      }),
-      // Retro-compat: saves antigos sem `startedAt` ganham `now` como fallback.
-      // Tempo de jogo passa a contar a partir do primeiro carregamento pós-update.
-      startedAt: typeof data.startedAt === 'number' ? data.startedAt : Date.now(),
+      state: {
+        resource: new Decimal(data.resource ?? '0'),
+        generators: data.generators.map((g) => {
+          const gen = createGenerator(g.id, g.unlocked);
+          gen.count = new Decimal(g.count);
+          gen.purchases = g.purchases;
+          return gen;
+        }),
+        // Retro-compat: saves antigos sem `startedAt` ganham `now` como fallback.
+        // Tempo de jogo passa a contar a partir do primeiro carregamento pós-update.
+        startedAt: typeof data.startedAt === 'number' ? data.startedAt : Date.now(),
+      },
+      lastSavedAt: typeof data.ts === 'number' ? data.ts : Date.now(),
     };
   } catch {
     return null;
   }
+}
+
+export function load(): GameState | null {
+  const loaded = loadWithMeta();
+  return loaded?.state ?? null;
 }
 
 export function persist(state: GameState): void {

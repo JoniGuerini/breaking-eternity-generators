@@ -1,7 +1,7 @@
 import Decimal from 'break_eternity.js';
 import { create } from 'zustand';
 import { D, DT_CAP, createGenerator, getBuyCost } from './config';
-import { clearSave, load, makeFreshState, persist } from './persistence';
+import { clearSave, loadWithMeta, makeFreshState, persist } from './persistence';
 import type { GameState, Generator } from './types';
 
 /**
@@ -16,6 +16,9 @@ import type { GameState, Generator } from './types';
  * sem também subscrever `tick` — use o hook `useGameTick()` ou selectors
  * que dependam de `tick` pra reatividade.
  */
+const OFFLINE_MIN_SECONDS = 1;
+const OFFLINE_MAX_SECONDS = 8 * 60 * 60;
+
 interface GameStore extends GameState {
   /** Contador incrementado em cadência reduzida pra disparar re-render. */
   tick: number;
@@ -28,7 +31,65 @@ interface GameStore extends GameState {
   notify(): void;
 }
 
-const initial = load() ?? makeFreshState();
+function checkUnlocksMutating(state: { resource: Decimal; generators: Generator[] }) {
+  for (const gen of state.generators) {
+    if (!gen.unlocked && state.resource.gte(gen.unlockThreshold)) {
+      gen.unlocked = true;
+    }
+  }
+  // Garante que sempre haja um único próximo gerador bloqueado visível.
+  const last = state.generators[state.generators.length - 1];
+  if (last && last.unlocked) {
+    state.generators.push(createGenerator(last.id + 1, false));
+  }
+}
+
+function applyProductionTickMutating(state: { resource: Decimal; generators: Generator[] }, dt: number) {
+  const clampedDt = Math.min(DT_CAP, Math.max(0, dt));
+  if (clampedDt <= 0) return;
+
+  const gens = state.generators;
+
+  // Gen 1 -> Recurso Base
+  const gen1 = gens[0];
+  if (gen1) {
+    state.resource = state.resource.add(gen1.count.mul(gen1.productionRate).mul(clampedDt));
+  }
+
+  // Gen N (N>=2) -> Gen N-1.
+  for (let i = 1; i < gens.length; i++) {
+    const gen = gens[i];
+    if (!gen.unlocked) continue;
+    const prod = gen.count.mul(gen.productionRate).mul(clampedDt);
+    gens[i - 1].count = gens[i - 1].count.add(prod);
+  }
+
+  checkUnlocksMutating(state);
+}
+
+function applyOfflineProgressMutating(state: GameState, elapsedSeconds: number) {
+  const capped = Math.min(OFFLINE_MAX_SECONDS, Math.max(0, elapsedSeconds));
+  if (capped < OFFLINE_MIN_SECONDS) return;
+
+  let remaining = capped;
+  while (remaining > 0) {
+    const step = Math.min(DT_CAP, remaining);
+    applyProductionTickMutating(state, step);
+    remaining -= step;
+  }
+}
+
+function makeInitialState(): GameState {
+  const loaded = loadWithMeta();
+  if (!loaded) return makeFreshState();
+
+  const now = Date.now();
+  const elapsed = (now - loaded.lastSavedAt) / 1000;
+  applyOfflineProgressMutating(loaded.state, elapsed);
+  return loaded.state;
+}
+
+const initial = makeInitialState();
 
 export const useGameStore = create<GameStore>((set, get) => ({
   resource: initial.resource,
@@ -38,30 +99,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   applyTick(dt: number) {
     const state = get();
-    const clampedDt = Math.min(DT_CAP, Math.max(0, dt));
-    if (clampedDt <= 0) return;
-
-    const gens = state.generators;
-
-    // Gen 1 → Recurso Base
-    const gen1 = gens[0];
-    if (gen1) {
-      state.resource = state.resource.add(
-        gen1.count.mul(gen1.productionRate).mul(clampedDt)
-      );
-    }
-
-    // Gen N (N>=2) → Gen N-1.
-    // Iteração de baixo (índice 1) pra cima usa o `count` do nível superior
-    // ANTES da produção daquele nível neste mesmo frame, evitando compostagem.
-    for (let i = 1; i < gens.length; i++) {
-      const gen = gens[i];
-      if (!gen.unlocked) continue;
-      const prod = gen.count.mul(gen.productionRate).mul(clampedDt);
-      gens[i - 1].count = gens[i - 1].count.add(prod);
-    }
-
-    checkUnlocksMutating(state);
+    applyProductionTickMutating(state, dt);
   },
 
   buy(generatorId: number) {
@@ -94,23 +132,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set({ tick: get().tick + 1 });
   },
 }));
-
-/**
- * Desbloqueio passivo: muta o array de geradores. Chamado dentro do tick
- * e da compra. Não chama `notify` — quem chama é responsável.
- */
-function checkUnlocksMutating(state: { resource: Decimal; generators: Generator[] }) {
-  for (const gen of state.generators) {
-    if (!gen.unlocked && state.resource.gte(gen.unlockThreshold)) {
-      gen.unlocked = true;
-    }
-  }
-  // Garante que sempre haja um único próximo gerador bloqueado visível.
-  const last = state.generators[state.generators.length - 1];
-  if (last && last.unlocked) {
-    state.generators.push(createGenerator(last.id + 1, false));
-  }
-}
 
 /**
  * Taxa total de produção do Recurso Base (apenas Gen1 contribui diretamente
