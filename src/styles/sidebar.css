@@ -49,10 +49,48 @@
 }
 
 .app-sidebar__footer {
+  display: flex;
+  align-items: center;
+  gap: 14px;
   color: var(--text-mute);
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.08em;
+}
+
+.app-sidebar__version {
+  /* Texto puro — herda cor/fonte do footer pai. */
+}
+
+/*
+ * Botão de toggle de tema. Stack do botão: 14px do ícone + 6px de padding
+ * em volta = ~26x26 hit-area. Sem borda, sem fundo — alinha visualmente
+ * com o `v0.1` ao lado.
+ */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-mute);
+  cursor: pointer;
+  transition: color 0.15s ease, transform 0.15s ease;
+  /* Reset extra pra garantir que o reset global não interfira. */
+  border-radius: 0;
+}
+
+.theme-toggle:hover {
+  color: var(--text);
+}
+
+.theme-toggle:active {
+  transform: translateY(1px);
+}
+
+.theme-toggle svg {
+  display: block;
 }
 
 /* Em viewports não largas o suficiente pra sidebar caber ao lado do
@@ -73,6 +111,11 @@
     margin: 0 0 24px;
     padding: 0;
     flex-shrink: 0;
+    /* Linha única horizontal: o `top` (título + reset inline) à esquerda,
+     * o `footer` (com o toggle) à direita. Sem repetir layout vertical. */
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
   }
 
   .app-sidebar__top {
@@ -80,13 +123,15 @@
      * espaço vertical e não empurrar a lista pra fora da viewport. */
     flex-direction: row;
     align-items: baseline;
-    justify-content: space-between;
-    width: 100%;
+    justify-content: flex-start;
+    flex: 1;
     flex-wrap: wrap;
     gap: 16px;
   }
 
-  .app-sidebar__footer {
+  /* Versão (`v0.1`) some no empilhado pra não poluir o header inline; o
+   * toggle de tema permanece visível, ancorado à direita. */
+  .app-sidebar__version {
     display: none;
   }
 }

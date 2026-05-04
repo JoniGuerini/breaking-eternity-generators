@@ -1,3 +1,5 @@
+import { ThemeToggle } from './ThemeToggle';
+
 interface AppSidebarProps {
   onRequestReset: () => void;
 }
@@ -24,7 +26,10 @@ export function AppSidebar({ onRequestReset }: AppSidebarProps) {
           ↺ Reiniciar
         </button>
       </div>
-      <div className="app-sidebar__footer">v0.1</div>
+      <div className="app-sidebar__footer">
+        <span className="app-sidebar__version">v0.1</span>
+        <ThemeToggle />
+      </div>
     </aside>
   );
 }

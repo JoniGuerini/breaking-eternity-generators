@@ -5,7 +5,12 @@
  * mecânica e balanceamento, não em visual. Quando voltarmos pro visual,
  * basta editar este arquivo — todo o app consome via tokens.
  *
- * Bordas: 0 (sem arredondamento) em todos os elementos.
+ * Dois temas:
+ *  - Default (`:root`)        → dark mode (preto/grafite)
+ *  - `[data-theme="light"]`   → light mode (off-white quente)
+ *
+ * O atributo `data-theme` é definido em `<html>` por `useTheme`. Sem o
+ * atributo, prevalece o dark.
  */
 
 :root {
@@ -29,7 +34,7 @@
   --text-mute: #555555;
   --text-locked: #444444;
 
-  /* ─── Acento (BRANCO neutro — única cor de destaque) ─── */
+  /* ─── Acento (BRANCO neutro — única cor de destaque no dark) ─── */
   --accent: #ffffff;
   --accent-strong: #ffffff;
   --accent-dim: #aaaaaa;
@@ -38,7 +43,7 @@
   /* ─── Status ─── */
   --success: #cccccc;
   --locked: #404040;
-  --danger: #d97a6a;   /* única cor que sobra: perigo continua coral, sinaliza universalmente */
+  --danger: #d97a6a;   /* perigo continua coral, sinaliza universalmente */
 
   /* ─── Derivados / transparências ─── */
   --accent-tint: rgba(255, 255, 255, 0.08);
@@ -59,4 +64,71 @@
   --font-display: 'Fraunces', serif;
   --font-mono: 'JetBrains Mono', monospace;
   --font-body: 'Inter', sans-serif;
+}
+
+/*
+ * Light mode — "papel quente"
+ *
+ * Inspirado em editorial/journal: fundo off-white levemente cremoso pra
+ * atenuar a fadiga visual (não branco puro), texto preto profundo nas
+ * hierarquias principais e cinzas neutros nos labels. Mesma família de
+ * cinzas do dark, só invertida em luminosidade.
+ *
+ * As bordas são MAIS visíveis em light que no dark (tom de cinza médio
+ * sobre off-white), porque um cinza muito claro sobre branco simplesmente
+ * desaparece.
+ *
+ * O `--accent` em light deixa de ser branco e passa a ser PRETO — porque
+ * "acento" no nosso design system significa "elemento que se destaca da
+ * UI", e em light isso é a cor mais escura, não a mais clara.
+ *
+ * O `--danger` (coral) é o mesmo nos dois modos; já tem contraste decente
+ * tanto sobre preto quanto sobre off-white.
+ */
+[data-theme='light'] {
+  /* Camadas — agora claras, com leve gradiente entre o fundo e os cards.
+   * `--bg` é off-white com hint de creme (não puro #fff pra evitar
+   * brilho excessivo); `--bg-card` é branco real, fazendo os cards
+   * "saltarem" levemente do fundo. */
+  --bg: #f5f3ee;
+  --bg-card: #ffffff;
+  --bg-card-hover: #fafaf7;
+  --bg-elevated: #ffffff;
+  --bg-locked: #ebe9e3;
+
+  /* Bordas — cinza médio, visíveis sobre o off-white sem serem agressivas. */
+  --border: #d8d4cb;
+  --border-bright: #b8b3a8;
+  --border-deep: #e8e5dd;
+  --border-locked: #ddd9d0;
+
+  /* Texto — preto profundo nas hierarquias principais, escala de cinzas
+   * descendentes pra dim/mute/locked. */
+  --text: #1a1a1a;
+  --text-strong: #000000;
+  --text-dim: #6b6b6b;
+  --text-mute: #9a958a;
+  --text-locked: #b8b3a8;
+
+  /* Acento — agora preto (em vez de branco). Em light, "destaque máximo"
+   * é a cor mais escura disponível. */
+  --accent: #000000;
+  --accent-strong: #000000;
+  --accent-dim: #4a4a4a;
+  --accent-deep: #d8d4cb;
+
+  /* Status — `--success` continua neutro/discreto (cinza médio), pra não
+   * verdejar a UI; `--locked` mais escuro pra ler sobre off-white. */
+  --success: #555555;
+  --locked: #c4c0b6;
+  --danger: #c25f4f;   /* coral levemente mais saturado pra destacar sobre off-white */
+
+  /* Derivados — refazem da mesma forma do dark, mas agora "tints" são
+   * baseados em preto em vez de branco. */
+  --accent-tint: rgba(0, 0, 0, 0.06);
+  --accent-glow: transparent;
+  --success-glow: transparent;
+  --mute-tint: rgba(154, 149, 138, 0.18);
+  --danger-border: rgba(194, 95, 79, 0.45);
+  --backdrop: rgba(245, 243, 238, 0.78);
 }
