@@ -120,3 +120,59 @@
 .btn--link.btn--link-danger:hover:not(:disabled) {
   color: var(--danger);
 }
+
+/* ---------- Modificador: hold (press & hold to confirm) ---------- */
+
+/* Preenche da esquerda pra direita conforme o usuário segura. Combina
+ * com .btn--danger no caso do reset. O preenchimento é um <span> com
+ * scaleX(progress) — GPU-friendly e sem reflow. */
+.btn--hold {
+  position: relative;
+  overflow: hidden;
+  /* Largura mínima pra acomodar o texto "Segure pra reiniciar" sem
+   * encolher abaixo do tamanho normal do botão. */
+  min-width: 180px;
+}
+
+/* Camada de fill — fica abaixo do label. Cor do --danger combinando
+ * com a variante. Sem transição: o `progress` já é fluido pelo rAF
+ * (uma transição CSS aqui causaria atraso/lag entre frames). */
+.btn--hold__fill {
+  position: absolute;
+  inset: 0;
+  background: var(--danger);
+  transform: scaleX(0);
+  transform-origin: left center;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.btn--hold__label {
+  position: relative;
+  z-index: 1;
+  /* Texto fica legível em ambos os estados. Cor é controlada abaixo
+   * pelo data-holding pra inverter quando o fundo é preenchido. */
+  transition: color 0.12s ease;
+}
+
+/* Enquanto está pressionando, o botão simula seu estado "hover preenchido":
+ * o texto vira a cor do fundo (vir a ser coberto pelo fill) e a borda some
+ * pra dar leitura limpa do progresso. */
+.btn--hold[data-holding] .btn--hold__label {
+  color: var(--bg);
+}
+
+.btn--hold[data-holding] {
+  border-color: var(--danger);
+}
+
+/* Mantém o hover original neutralizado durante o hold pra não brigar
+ * com o efeito de fill. */
+.btn--danger.btn--hold:hover:not(:disabled) {
+  background: transparent;
+  color: var(--danger);
+}
+
+.btn--danger.btn--hold[data-holding]:hover:not(:disabled) {
+  color: var(--bg);
+}
