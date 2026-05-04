@@ -130,8 +130,8 @@ Ao abrir o jogo, o sistema lê `lastSavedAt` (campo `ts` do save) e calcula:
 Regras aplicadas:
 
 - Ignora offline muito curto (`elapsed < 1s`).
-- Aplica cap de segurança:
-  - `offlineSeconds = clamp(elapsed, 0, 28800)` (8 horas).
+- Não aplica cap máximo de tempo offline:
+  - `offlineSeconds = max(0, elapsed)`.
 - Simulação é executada em chunks de no máximo `0.5s` (mesmo `DT_CAP` do loop normal):
   - enquanto `remaining > 0`, roda produção com `step = min(0.5, remaining)`.
 

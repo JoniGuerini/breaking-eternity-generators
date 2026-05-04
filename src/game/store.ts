@@ -17,7 +17,6 @@ import type { GameState, Generator } from './types';
  * que dependam de `tick` pra reatividade.
  */
 const OFFLINE_MIN_SECONDS = 1;
-const OFFLINE_MAX_SECONDS = 8 * 60 * 60;
 
 interface GameStore extends GameState {
   /** Contador incrementado em cadência reduzida pra disparar re-render. */
@@ -68,10 +67,10 @@ function applyProductionTickMutating(state: { resource: Decimal; generators: Gen
 }
 
 function applyOfflineProgressMutating(state: GameState, elapsedSeconds: number) {
-  const capped = Math.min(OFFLINE_MAX_SECONDS, Math.max(0, elapsedSeconds));
-  if (capped < OFFLINE_MIN_SECONDS) return;
+  const offlineSeconds = Math.max(0, elapsedSeconds);
+  if (offlineSeconds < OFFLINE_MIN_SECONDS) return;
 
-  let remaining = capped;
+  let remaining = offlineSeconds;
   while (remaining > 0) {
     const step = Math.min(DT_CAP, remaining);
     applyProductionTickMutating(state, step);
