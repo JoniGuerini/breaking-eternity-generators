@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Breaking Eternity: Generators</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e13;
+    --bg-card: #131820;
+    --bg-card-hover: #1a2129;
+    --border: #232b35;
+    --border-bright: #364150;
+    --text: #e8e2d4;
+    --text-dim: #8b8578;
+    --text-mute: #565248;
+    --accent: #d4a574;
+    --accent-dim: #8a6d4d;
+    --success: #7fb069;
+    --locked: #4a4f57;
+    --danger: #c97064;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    min-height: 100vh;
+    padding: 56px 32px 80px;
+    background-image:
+      radial-gradient(ellipse at 20% 0%, rgba(212, 165, 116, 0.05), transparent 55%),
+      radial-gradient(ellipse at 80% 100%, rgba(127, 176, 105, 0.03), transparent 60%);
+    background-attachment: fixed;
+  }
+
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 28px;
+    margin-bottom: 32px;
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+  }
+
+  .reset-btn {
+    background: none;
+    color: var(--text-mute);
+    border: none;
+    padding: 4px 0;
+    font-family: 'Inter', sans-serif;
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-weight: 500;
+    transition: color 0.15s;
+  }
+
+  .reset-btn:hover { color: var(--danger); }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 40px;
+    font-weight: 500;
+    letter-spacing: -0.025em;
+    font-variation-settings: 'opsz' 144, 'SOFT' 30;
+    line-height: 1.1;
+  }
+
+  .subtitle {
+    color: var(--text-mute);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 6px;
+    margin-bottom: 28px;
+  }
+
+  .resource-block {
+    display: flex;
+    align-items: baseline;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+
+  .resource-label {
+    color: var(--text-dim);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .resource-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 32px;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: -0.01em;
+  }
+
+  .resource-rate {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--success);
+  }
+
+  .generators {
+    display: grid;
+    gap: 10px;
+  }
+
+  .generator {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px 22px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px;
+    align-items: center;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .generator:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-bright);
+  }
+
+  .generator.locked {
+    opacity: 0.6;
+  }
+
+  .generator.locked:hover {
+    opacity: 0.85;
+  }
+
+  .gen-info { display: grid; gap: 6px; min-width: 0; }
+
+  .gen-name {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  .gen-detail {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 3px 18px;
+    font-size: 13px;
+    align-items: baseline;
+    margin-top: 2px;
+  }
+
+  .gen-detail .label {
+    color: var(--text-mute);
+    text-transform: uppercase;
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    font-weight: 500;
+  }
+
+  .gen-detail .value {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text);
+    font-size: 13px;
+  }
+
+  .gen-detail .value .target {
+    color: var(--accent);
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    margin-left: 6px;
+  }
+
+  .gen-detail .value.is-total { color: var(--success); }
+
+  .gen-action {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    min-width: 180px;
+  }
+
+  button {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent-dim);
+    padding: 9px 18px;
+    border-radius: 4px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.15s ease;
+  }
+
+  button:hover:not(:disabled) {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+
+  button:active:not(:disabled) { transform: translateY(1px); }
+
+  button:disabled {
+    color: var(--locked);
+    border-color: var(--locked);
+    cursor: not-allowed;
+  }
+
+  button.unlock,
+  button.unlock:hover { /* deprecated — desbloqueio agora é passivo */ }
+
+  .gen-pending {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    min-width: 180px;
+    padding: 4px 8px;
+  }
+
+  .gen-pending-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    font-weight: 500;
+  }
+
+  .gen-pending-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    color: var(--accent);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  .gen-pending-bar {
+    width: 100%;
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 3px;
+  }
+
+  .gen-pending-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.18s ease;
+    width: 0%;
+  }
+
+  .gen-cost {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-mute);
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+
+  .gen-cost.affordable { color: var(--success); }
+
+  .gen-cost-label {
+    color: var(--text-mute);
+    margin-right: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 10px;
+  }
+
+  /* ---------- Modal ---------- */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(8, 11, 16, 0.72);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 24px;
+    animation: modal-fade 0.18s ease;
+  }
+
+  .modal-backdrop[hidden] { display: none; }
+
+  .modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border-bright);
+    border-radius: 8px;
+    padding: 28px 32px 24px;
+    max-width: 440px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: modal-rise 0.2s ease;
+  }
+
+  .modal-title {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    margin-bottom: 10px;
+  }
+
+  .modal-body {
+    color: var(--text-dim);
+    font-size: 14px;
+    line-height: 1.55;
+    margin-bottom: 24px;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  .btn-secondary,
+  .btn-danger {
+    background: transparent;
+    border: 1px solid var(--border-bright);
+    color: var(--text-dim);
+    padding: 9px 18px;
+    border-radius: 4px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--text-dim);
+    color: var(--text);
+  }
+
+  .btn-danger {
+    color: var(--danger);
+    border-color: rgba(201, 112, 100, 0.4);
+  }
+
+  .btn-danger:hover {
+    background: var(--danger);
+    color: var(--bg);
+    border-color: var(--danger);
+  }
+
+  @keyframes modal-fade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  @keyframes modal-rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-top">
+        <h1>Breaking Eternity</h1>
+        <button class="reset-btn" id="reset-btn">↺ Reiniciar</button>
+      </div>
+      <div class="subtitle">Generators · v0.1</div>
+      <div class="resource-block">
+        <span class="resource-label">Recurso Base</span>
+        <span class="resource-value" id="resource">10.00</span>
+        <span class="resource-rate" id="resource-rate">+0.00 /s</span>
+      </div>
+    </header>
+
+    <div class="generators" id="generators"></div>
+  </div>
+
+  <div class="modal-backdrop" id="modal-backdrop" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <h2 class="modal-title" id="modal-title">Reiniciar progresso?</h2>
+      <p class="modal-body">
+        Isso vai apagar tudo o que você acumulou e começar um novo jogo do zero.
+        Não tem como desfazer.
+      </p>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="modal-cancel">Cancelar</button>
+        <button class="btn-danger" id="modal-confirm">Reiniciar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/gh/Patashu/break_eternity.js/break_eternity.min.js"></script>
+  <script>
+    /* ============================================================
+     *  Breaking Eternity: Generators
+     *  Loop:
+     *    Gerador 1 → produz Recurso Base
+     *    Gerador N (N>=2) → produz Gerador N-1
+     *  Gerador N+1 só aparece (bloqueado) depois que Gerador N é desbloqueado.
+     * ============================================================ */
+
+    const D = (x) => new Decimal(x);
+
+    // ---------- Formatação ----------
+    function fmt(d) {
+      if (typeof d === 'number') d = D(d);
+      if (d.eq(0)) return '0';
+      if (d.lt(0.01)) return d.toExponential(2);
+      if (d.lt(1000)) return d.toFixed(2);
+      if (d.lt(1e6)) return Math.floor(d.toNumber()).toLocaleString('pt-BR');
+      return d.toExponential(2);
+    }
+
+    function fmtCount(d) {
+      if (d.eq(0)) return '0';
+      if (d.lt(100)) return d.toFixed(2);
+      if (d.lt(1e6)) return Math.floor(d.toNumber()).toLocaleString('pt-BR');
+      return d.toExponential(2);
+    }
+
+    // ---------- Configuração de gerador ----------
+    function getGenConfig(n) {
+      // Taxa: 0.20, 0.19, 0.18, ... com piso em 0.10
+      const rate = Math.max(0.10, 0.21 - 0.01 * n);
+      // Custo base do gerador N: 10^N  (Gen1=10, Gen2=100, Gen3=1000, ...)
+      const baseCost = Decimal.pow(10, n);
+      return {
+        productionRate: D(rate),
+        baseCost: baseCost,
+        costMultiplier: D(1.5),
+        unlockThreshold: baseCost
+      };
+    }
+
+    function createGenerator(n, unlocked) {
+      const cfg = getGenConfig(n);
+      return {
+        id: n,
+        count: D(0),
+        purchases: 0,
+        unlocked: unlocked,
+        productionRate: cfg.productionRate,
+        baseCost: cfg.baseCost,
+        costMultiplier: cfg.costMultiplier,
+        unlockThreshold: cfg.unlockThreshold
+      };
+    }
+
+    // ---------- Estado ----------
+    const state = {
+      resource: D(0),
+      generators: []
+    };
+
+    function initFreshState() {
+      state.resource = D(10); // Suficiente pra comprar 1x Gerador 1
+      state.generators = [];
+      // Gerador 1 desbloqueado, Gerador 2 visível mas bloqueado
+      state.generators.push(createGenerator(1, true));
+      state.generators.push(createGenerator(2, false));
+    }
+
+    // ---------- Persistência (localStorage) ----------
+    const SAVE_KEY = 'breaking_eternity_save_v1';
+    let isResetting = false;
+
+    function save() {
+      if (isResetting) return; // não persiste enquanto o reset acontece
+      try {
+        const data = {
+          version: 1,
+          ts: Date.now(),
+          resource: state.resource.toString(),
+          generators: state.generators.map(g => ({
+            id: g.id,
+            count: g.count.toString(),
+            purchases: g.purchases,
+            unlocked: g.unlocked
+          }))
+        };
+        localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+      } catch (e) {
+        // pode falhar em sandboxes (ex: preview de artifact). silencioso.
+      }
+    }
+
+    function load() {
+      try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (!raw) return false;
+        const data = JSON.parse(raw);
+        if (!data || data.version !== 1) return false;
+
+        state.resource = D(data.resource);
+        state.generators = data.generators.map(g => {
+          const gen = createGenerator(g.id, g.unlocked);
+          gen.count = D(g.count);
+          gen.purchases = g.purchases;
+          return gen;
+        });
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function performReset() {
+      isResetting = true;
+      try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+      location.reload();
+    }
+
+    // ---------- Wake Lock — mantém a tela acordada com o jogo em foco ----------
+    let wakeLock = null;
+
+    async function requestWakeLock() {
+      if (!('wakeLock' in navigator)) return;
+      if (wakeLock !== null) return;
+      try {
+        wakeLock = await navigator.wakeLock.request('screen');
+        wakeLock.addEventListener('release', () => { wakeLock = null; });
+      } catch (e) {
+        // navegador pode recusar — ignorado silenciosamente
+      }
+    }
+
+    // ---------- Lógica ----------
+    function getBuyCost(gen) {
+      return gen.baseCost.mul(gen.costMultiplier.pow(gen.purchases));
+    }
+
+    function buyGenerator(n) {
+      const gen = state.generators[n - 1];
+      if (!gen || !gen.unlocked) return;
+      const cost = getBuyCost(gen);
+      if (state.resource.gte(cost)) {
+        state.resource = state.resource.sub(cost);
+        gen.count = gen.count.add(1);
+        gen.purchases += 1;
+        render();
+      }
+    }
+
+    function checkUnlocks() {
+      let changed = false;
+
+      // Desbloqueio passivo: qualquer gerador bloqueado cujo threshold foi atingido
+      // é desbloqueado automaticamente. Uma vez desbloqueado, nunca mais é bloqueado.
+      for (const gen of state.generators) {
+        if (!gen.unlocked && state.resource.gte(gen.unlockThreshold)) {
+          gen.unlocked = true;
+          changed = true;
+        }
+      }
+
+      // Garante que sempre exista o "próximo" gerador bloqueado na lista,
+      // pra mostrar pro jogador o que vem a seguir.
+      const last = state.generators[state.generators.length - 1];
+      if (last && last.unlocked) {
+        state.generators.push(createGenerator(last.id + 1, false));
+        changed = true;
+      }
+
+      if (changed) render();
+    }
+
+    function getResourceRate() {
+      if (state.generators.length === 0) return D(0);
+      return state.generators[0].count.mul(state.generators[0].productionRate);
+    }
+
+    // ---------- Loop ----------
+    let lastTime = performance.now();
+    function tick(now) {
+      let dt = (now - lastTime) / 1000;
+      lastTime = now;
+      if (dt > 0.5) dt = 0.5; // evita saltos absurdos após troca de aba
+
+      if (dt > 0) {
+        // Gen 1 → Recurso
+        const gen1 = state.generators[0];
+        if (gen1) {
+          state.resource = state.resource.add(
+            gen1.count.mul(gen1.productionRate).mul(dt)
+          );
+        }
+        // Gen N (>=2) → Gen N-1
+        for (let i = 1; i < state.generators.length; i++) {
+          const gen = state.generators[i];
+          if (!gen.unlocked) continue;
+          const prod = gen.count.mul(gen.productionRate).mul(dt);
+          state.generators[i - 1].count = state.generators[i - 1].count.add(prod);
+        }
+      }
+
+      checkUnlocks();
+      updateDisplay();
+      requestAnimationFrame(tick);
+    }
+
+    // ---------- Render ----------
+    function render() {
+      const container = document.getElementById('generators');
+      container.innerHTML = '';
+
+      state.generators.forEach((gen) => {
+        const card = document.createElement('div');
+        card.className = 'generator' + (gen.unlocked ? '' : ' locked');
+        card.id = 'gen-' + gen.id;
+
+        const target = gen.id === 1 ? 'Recurso Base' : 'Gerador ' + (gen.id - 1);
+        const rate = gen.productionRate.toFixed(2);
+
+        const actionHtml = gen.unlocked
+          ? `<button class="buy">Comprar</button>
+             <span class="gen-cost"></span>`
+          : `<div class="gen-pending">
+               <span class="gen-pending-label">Desbloqueia em</span>
+               <span class="gen-pending-value">${fmt(gen.unlockThreshold)}</span>
+               <div class="gen-pending-bar"><div class="gen-pending-bar-fill"></div></div>
+             </div>`;
+
+        card.innerHTML = `
+          <div class="gen-info">
+            <div class="gen-name">Gerador ${gen.id}</div>
+            <div class="gen-detail">
+              <span class="label">Quantidade</span>
+              <span class="value gen-count-value">0</span>
+
+              <span class="label">Por unidade</span>
+              <span class="value">${rate}/s <span class="target">de ${target}</span></span>
+
+              <span class="label">Total</span>
+              <span class="value is-total gen-total-value">0.00/s</span>
+            </div>
+          </div>
+          <div class="gen-action">
+            ${actionHtml}
+          </div>
+        `;
+
+        if (gen.unlocked) {
+          const button = card.querySelector('button');
+          button.addEventListener('click', () => buyGenerator(gen.id));
+        }
+
+        container.appendChild(card);
+      });
+
+      updateDisplay();
+    }
+
+    function updateDisplay() {
+      document.getElementById('resource').textContent = fmt(state.resource);
+      document.getElementById('resource-rate').textContent =
+        '+' + fmt(getResourceRate()) + ' /s';
+
+      state.generators.forEach((gen) => {
+        const cardEl = document.getElementById('gen-' + gen.id);
+        if (!cardEl) return;
+
+        const countEl = cardEl.querySelector('.gen-count-value');
+        if (countEl) countEl.textContent = fmtCount(gen.count);
+
+        const totalEl = cardEl.querySelector('.gen-total-value');
+        if (totalEl) {
+          totalEl.textContent = fmt(gen.count.mul(gen.productionRate)) + '/s';
+        }
+
+        const btn = cardEl.querySelector('button');
+        const costEl = cardEl.querySelector('.gen-cost');
+
+        if (gen.unlocked) {
+          const cost = getBuyCost(gen);
+          if (btn) btn.disabled = !state.resource.gte(cost);
+          if (costEl) {
+            costEl.innerHTML =
+              '<span class="gen-cost-label">custo</span>' + fmt(cost);
+            costEl.classList.toggle('affordable', state.resource.gte(cost));
+          }
+        } else {
+          // Atualiza barra de progresso até o desbloqueio
+          const fillEl = cardEl.querySelector('.gen-pending-bar-fill');
+          if (fillEl) {
+            const ratio = state.resource.div(gen.unlockThreshold).toNumber();
+            const pct = Math.min(100, Math.max(0, ratio * 100));
+            fillEl.style.width = pct + '%';
+          }
+        }
+      });
+    }
+
+    // ---------- Boot ----------
+    if (!load()) initFreshState();
+    render();
+    requestAnimationFrame(tick);
+
+    // Auto-save: a cada 5s, ao esconder a aba, e ao fechar
+    setInterval(save, 5000);
+    window.addEventListener('beforeunload', save);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        save();
+      } else {
+        requestWakeLock();
+      }
+    });
+
+    // Wake Lock inicial
+    requestWakeLock();
+
+    // Modal de reset
+    const modal = document.getElementById('modal-backdrop');
+    function openResetModal()  { modal.hidden = false; }
+    function closeResetModal() { modal.hidden = true; }
+
+    document.getElementById('reset-btn').addEventListener('click', openResetModal);
+    document.getElementById('modal-cancel').addEventListener('click', closeResetModal);
+    document.getElementById('modal-confirm').addEventListener('click', performReset);
+
+    // Fecha ao clicar fora ou apertar ESC
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeResetModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !modal.hidden) closeResetModal();
+    });
+  </script>
+</body>
+</html>

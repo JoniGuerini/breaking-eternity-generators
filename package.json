@@ -1,0 +1,29 @@
+{
+  "name": "breaking-eternity-generators",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Jogo incremental/idle com cadeia de geradores. Migração da versão HTML single-file para React + Vite.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "break_eternity.js": "^2.1.3",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "zustand": "^5.0.12"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^6.0.1",
+    "typescript": "^5.9.3",
+    "vite": "^8.0.10",
+    "vitest": "^4.1.5"
+  }
+}

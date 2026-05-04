@@ -1,0 +1,72 @@
+/*
+ * Painel fixo no canto superior direito da viewport — espelho da sidebar.
+ * Exibe o tempo total de jogo (wall clock).
+ *
+ * Mesmo cálculo de offsets/breakpoint que `.app-sidebar`. Em telas estreitas
+ * ele empilha junto com a sidebar e some pro fluxo (ver media query abaixo).
+ */
+
+.playtime-panel {
+  position: fixed;
+  top: 56px;
+  right: 56px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  /* Mesmo limite da sidebar; mantém simetria e nunca atravessa o conteúdo. */
+  max-width: 280px;
+}
+
+.playtime-panel__top {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.playtime-panel__label {
+  color: var(--text-mute);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.playtime-panel__value {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/*
+ * Mesmo breakpoint da sidebar. Quando ela empilha, o painel de tempo entra
+ * inline com o cabeçalho dela — no modo empilhado, o `.app-sidebar__top` já
+ * é flex-row com `justify-content: space-between`, então a gente só precisa
+ * que esse painel se comporte como bloco estático ao lado do botão de reset.
+ *
+ * Solução simples: deixa ele estático e empurra com `margin-left: auto`
+ * dentro do mesmo `<main>`. Como o `<PlaytimePanel>` mora fora do
+ * `.app-sidebar`, a gente apenas garante que ele apareça acima da lista,
+ * compactado.
+ */
+@media (max-width: 1480px) {
+  .playtime-panel {
+    position: static;
+    width: 100%;
+    max-width: none;
+    align-items: flex-start;
+    margin: 0 0 16px;
+  }
+
+  .playtime-panel__top {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .playtime-panel__value {
+    font-size: 16px;
+  }
+}

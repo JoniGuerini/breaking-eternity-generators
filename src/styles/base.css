@@ -1,0 +1,38 @@
+/*
+ * Estilos de página — body, container, atmosferas globais.
+ * Não inclui tipografia de componentes nem reset.
+ */
+
+html,
+body {
+  /* Página inteira não rola — quem rola é só a lista de geradores.
+   * `overscroll-behavior: none` desliga o "chicote" / bounce ao bater nas
+   * extremidades em macOS/iOS/touchpads modernos. */
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  background-image:
+    radial-gradient(ellipse at 20% 0%, var(--accent-glow), transparent 55%),
+    radial-gradient(ellipse at 80% 100%, var(--success-glow), transparent 60%);
+  background-attachment: fixed;
+}
+
+.container {
+  /* Coluna principal ocupa altura total da viewport e organiza filhos
+   * em coluna: header (fixo em altura) + lista (rola). */
+  position: relative;
+  max-width: 760px;
+  height: 100vh;
+  margin: 0 auto;
+  padding: 56px 32px 0;
+  display: flex;
+  flex-direction: column;
+}

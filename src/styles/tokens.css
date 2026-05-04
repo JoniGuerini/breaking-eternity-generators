@@ -1,0 +1,62 @@
+/*
+ * Design tokens — paleta neutra "trabalho em andamento".
+ *
+ * Esquema preto/branco/cinza enquanto o foco do desenvolvimento está em
+ * mecânica e balanceamento, não em visual. Quando voltarmos pro visual,
+ * basta editar este arquivo — todo o app consome via tokens.
+ *
+ * Bordas: 0 (sem arredondamento) em todos os elementos.
+ */
+
+:root {
+  /* ─── Camadas (mais escuro → mais claro) ─── */
+  --bg: #0a0a0a;
+  --bg-card: #161616;
+  --bg-card-hover: #1c1c1c;
+  --bg-elevated: #1f1f1f;
+  --bg-locked: #101010;
+
+  /* ─── Bordas ─── */
+  --border: #2a2a2a;
+  --border-bright: #3a3a3a;
+  --border-deep: #141414;
+  --border-locked: #1c1c1c;
+
+  /* ─── Texto ─── */
+  --text: #ececec;
+  --text-strong: #f5f5f5;
+  --text-dim: #888888;
+  --text-mute: #555555;
+  --text-locked: #444444;
+
+  /* ─── Acento (BRANCO neutro — única cor de destaque) ─── */
+  --accent: #ffffff;
+  --accent-strong: #ffffff;
+  --accent-dim: #aaaaaa;
+  --accent-deep: #333333;
+
+  /* ─── Status ─── */
+  --success: #cccccc;
+  --locked: #404040;
+  --danger: #d97a6a;   /* única cor que sobra: perigo continua coral, sinaliza universalmente */
+
+  /* ─── Derivados / transparências ─── */
+  --accent-tint: rgba(255, 255, 255, 0.08);
+  --accent-glow: transparent;
+  --success-glow: transparent;
+  --mute-tint: rgba(85, 85, 85, 0.18);
+  --danger-border: rgba(217, 122, 106, 0.4);
+  --backdrop: rgba(10, 10, 10, 0.78);
+
+  /* Sombras (apagadas no modo neutro pra não criar ruído visual) */
+  --shadow-sm: none;
+  --shadow-md: none;
+
+  /* Raio de canto — zero em tudo enquanto o foco for mecânica. */
+  --radius: 0;
+
+  /* ─── Tipografia ─── */
+  --font-display: 'Fraunces', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-body: 'Inter', sans-serif;
+}

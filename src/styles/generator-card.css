@@ -1,0 +1,213 @@
+/*
+ * Cards de gerador — desbloqueado e bloqueado.
+ *
+ * O `.generator` é o "shell" do card (background, borda, padding, hover)
+ * e serve aos dois estados. O conteúdo interno difere:
+ *   - Desbloqueado: layout em 3 linhas via `.gen-card`
+ *   - Bloqueado:    layout grid info|ação via `.gen-info` + `.gen-action`
+ *
+ * Tipografia (.label / .value / .target / .is-total) vem de typography.css
+ * e é compartilhada com qualquer outro componente.
+ */
+
+.generators {
+  display: grid;
+  gap: 10px;
+  /* Cards ficam ancorados no topo da lista. Sem isso, com poucos cards,
+   * o grid distribui o espaço extra entre as rows (esticando os cards). */
+  align-content: start;
+  /* Única região rolável da app. Cresce pra preencher a coluna principal,
+   * o resto fica fixo. `overscroll-behavior: contain` impede que a rolagem
+   * ao bater nas extremidades vaze pro body (que tem o "chicote" desligado
+   * de qualquer forma) e mata o bounce dentro desta lista também. */
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-bottom: 80px;
+  /* Esconde a barra de scroll mantendo o comportamento. */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge legado */
+}
+
+.generators::-webkit-scrollbar {
+  /* Chrome/Safari/novos Edge */
+  display: none;
+}
+
+.generator {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: center;
+}
+
+/* Card bloqueado — outro material. Frio, neutro, sem peso visual: sinaliza
+ * "fora do alcance" pelo PRÓPRIO MATERIAL, não por opacity/filtro. */
+.generator.locked {
+  background: var(--bg-locked);
+  border-color: var(--border-locked);
+  color: var(--text-locked);
+}
+
+/* Nome em destaque (Fraunces). Compartilhado entre os dois layouts. */
+.gen-name {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+/* ---------- Layout BLOQUEADO (info | ação lado-a-lado) ---------- */
+
+.gen-info {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.gen-action {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  min-width: 180px;
+}
+
+/* Indicador de progresso até o desbloqueio */
+.gen-pending {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  min-width: 180px;
+  padding: 4px 8px;
+}
+
+.gen-pending-label {
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  font-weight: 500;
+}
+
+.gen-pending-value {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--accent);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.gen-pending-bar {
+  width: 100%;
+  height: 2px;
+  background: var(--border);
+  border-radius: 0;
+  overflow: hidden;
+  margin-top: 3px;
+}
+
+.gen-pending-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.18s ease;
+  width: 0%;
+}
+
+/* ---------- Layout DESBLOQUEADO (3 linhas verticais) ---------- */
+
+.generator:has(.gen-card) {
+  /* Sobrescreve o `display: grid` do `.generator` padrão pra dar lugar
+     ao layout vertical do `.gen-card`. Background, borda, padding e hover
+     continuam vindos do shell. */
+  display: block;
+}
+
+.gen-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+.gen-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.gen-card__metrics {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.gen-card__sep {
+  border: 0;
+  border-top: 1px solid var(--border);
+  height: 0;
+  width: 100%;
+  margin: 0;
+}
+
+/* Helper de empilhamento label+valor (vertical).
+ *  - default:    label em cima, valor embaixo
+ *  - --reversed: valor em cima, label embaixo
+ *  - --right:    alinhado à direita
+ */
+.gen-card__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.gen-card__stack--reversed {
+  flex-direction: column-reverse;
+}
+
+.gen-card__stack--right {
+  text-align: right;
+  align-items: flex-end;
+}
+
+/* Variante local: label menor dentro do card pra dar respiro vertical. */
+.gen-card .label {
+  font-size: 9px;
+  letter-spacing: 0.16em;
+}
+
+/* Card "ativo" (count > 0): o número possuídos vira âmbar — sinaliza
+ * "este gerador está produzindo" pela COR DA INFO, sem marcador decorativo.
+ * Mantemos a tipografia idêntica, só muda a cor do value do count-block. */
+.generator.has-count .gen-card__head .value {
+  color: var(--accent-strong);
+}
+
+/* Faixa de ação full-width: layout interno (label esquerda + custo direita).
+ * Visual do botão vem de `.btn .btn--primary`. */
+.gen-card__action {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* Custo (aparece dentro da faixa de ação).
+ * Sem cor própria: herda do botão pai, então acompanha o estado dele
+ * (âmbar quando affordable, preto no hover, locked quando disabled). */
+.gen-cost {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}

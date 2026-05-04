@@ -1,0 +1,27 @@
+/*
+ * Ponto de entrada do CSS. Importa cada camada na ordem correta.
+ *
+ *   1. tokens.css     — design tokens (cores, fontes)
+ *   2. reset.css      — reset NEUTRO de tag, sem visual de botão
+ *   3. base.css       — body, container
+ *   4. typography.css — primitivas .label / .value / h1
+ *   5. buttons.css    — sistema .btn + variantes BEM
+ *   6. header.css     — barra superior e bloco de recurso
+ *   7. generator-card.css — cards (desbloqueado e bloqueado)
+ *   8. modal.css      — modal genérico + animações
+ *
+ * A ordem importa: camadas posteriores podem refinar (mas idealmente não
+ * sobrescrever) camadas anteriores. Se você precisa de !important ou de
+ * lutar com especificidade, é sinal de que a camada está desorganizada.
+ */
+
+@import './tokens.css';
+@import './reset.css';
+@import './base.css';
+@import './typography.css';
+@import './buttons.css';
+@import './sidebar.css';
+@import './playtime-panel.css';
+@import './header.css';
+@import './generator-card.css';
+@import './modal.css';

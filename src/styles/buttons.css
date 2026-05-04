@@ -1,0 +1,122 @@
+/*
+ * Sistema de botões — 1 base + 4 variantes.
+ *
+ *   .btn               base (padding, font, transição) — não tem visual
+ *                      próprio, só estrutura. Sempre combinada com uma
+ *                      variante.
+ *   .btn--primary      outline âmbar; hover preenche em âmbar.
+ *                      Usada em ações principais (comprar, confirmar).
+ *   .btn--secondary    outline cinza; hover acentua a borda.
+ *                      Usada em ações alternativas (cancelar no modal).
+ *   .btn--danger       outline vermelho; hover preenche em vermelho.
+ *                      Usada em ações destrutivas (reiniciar progresso).
+ *   .btn--link         estilo de link discreto, sem padding/borda.
+ *                      Usada em ações secundárias do header/topo.
+ *
+ * Como a base e cada variante usam classes (especificidade 0,1,0), elas
+ * NUNCA brigam com o reset de tag (`button` = 0,0,1). E como nunca aplicamos
+ * mais de uma variante, classes diferentes não conflitam entre si.
+ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 18px;
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease,
+    transform 0.05s ease;
+  /* Cor/borda padrão são fornecidas pela variante. */
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  color: var(--locked);
+  border-color: var(--locked);
+}
+
+/* ---------- Variante: primary (ação afirmativa) ---------- */
+
+/* Estado padrão: bloco preenchido sutilmente em âmbar profundo.
+ * - Sem borda visível — o botão É um bloco, não um outline
+ * - Fundo âmbar muito escuro (`--accent-deep`) — distinto do card
+ * - Texto âmbar saturado
+ *
+ * No hover acende totalmente em âmbar; no disabled vira cinza neutro. */
+.btn--primary {
+  color: var(--accent-strong);
+  border-color: transparent;
+  background: var(--accent-deep);
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.btn--primary:disabled {
+  background: var(--mute-tint);
+  color: var(--text-mute);
+}
+
+/* ---------- Variante: secondary (ação alternativa) ---------- */
+
+.btn--secondary {
+  color: var(--text-dim);
+  border-color: var(--border-bright);
+}
+
+.btn--secondary:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--text-dim);
+}
+
+/* ---------- Variante: danger (ação destrutiva) ---------- */
+
+.btn--danger {
+  color: var(--danger);
+  border-color: var(--danger-border);
+}
+
+.btn--danger:hover:not(:disabled) {
+  background: var(--danger);
+  color: var(--bg);
+  border-color: var(--danger);
+}
+
+/* ---------- Variante: link (texto sutil) ---------- */
+
+.btn--link {
+  padding: 4px 0;
+  border: none;
+  border-radius: 0;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  transition: color 0.15s ease;
+}
+
+.btn--link:hover:not(:disabled) {
+  color: var(--text);
+}
+
+/* Modificador de cor pra link (combina com .btn--link) — mantém o
+ * comportamento "muda a cor no hover" sem virar bloco. */
+.btn--link.btn--link-danger:hover:not(:disabled) {
+  color: var(--danger);
+}
