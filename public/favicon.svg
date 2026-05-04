@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!--
+    Breaking Eternity: Generators — favicon
+    Monograma "BE" branco sobre fundo preto.
+    Estilo serif inspirado no Fraunces do título do jogo.
+
+    Estratégia de fonte:
+      Browsers modernos renderizam <text> no SVG favicon usando fontes do
+      sistema; fontes web carregadas pelo HTML não estão disponíveis nesse
+      contexto. Por isso usamos uma cascata de serifs do sistema com
+      fallback final no `serif` genérico — sempre dá um resultado serifado
+      consistente entre plataformas.
+
+      `font-stretch: condensed` + peso 700 reproduz o "peso óptico alto"
+      do Fraunces no tamanho display, que é o que aparece no título.
+  -->
+
+  <rect width="64" height="64" fill="#0a0a0a"/>
+
+  <text
+    x="32"
+    y="32"
+    text-anchor="middle"
+    dominant-baseline="central"
+    fill="#ffffff"
+    font-family="'Fraunces', 'Cormorant Garamond', 'Playfair Display', 'Georgia', serif"
+    font-size="38"
+    font-weight="700"
+    font-stretch="condensed"
+    letter-spacing="-1.5"
+  >BE</text>
+</svg>
