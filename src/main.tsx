@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { loadStoredTheme } from './hooks/useTheme';
+import './i18n';
 import './styles/global.css';
 
 // Aplica o tema persistido ANTES do React montar pra evitar flash do dark

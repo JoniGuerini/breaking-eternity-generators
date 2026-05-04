@@ -1,4 +1,5 @@
 import { useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { setResetting } from '../game/loop';
 import { useGameStore } from '../game/store';
 import { useHoldToConfirm } from '../hooks/useHoldToConfirm';
@@ -22,6 +23,7 @@ const HOLD_DURATION_MS = 1500;
  *    recriem o save durante o processo.
  */
 export function ResetModal({ open, onClose }: ResetModalProps) {
+  const { t } = useTranslation();
   const reset = useGameStore((s) => s.reset);
 
   const handleConfirm = useCallback(() => {
@@ -60,15 +62,12 @@ export function ResetModal({ open, onClose }: ResetModalProps) {
     <div className="modal-backdrop" onClick={handleBackdropClick}>
       <div className="modal" role="dialog" aria-modal="true" aria-labelledby="reset-modal-title">
         <h2 className="modal-title" id="reset-modal-title">
-          Reiniciar progresso?
+          {t('modal.resetTitle')}
         </h2>
-        <p className="modal-body">
-          Isso vai apagar tudo o que você acumulou e começar um novo jogo do zero. Não tem como
-          desfazer.
-        </p>
+        <p className="modal-body">{t('modal.resetBody')}</p>
         <div className="modal-actions">
           <button type="button" className="btn btn--secondary" onClick={onClose}>
-            Cancelar
+            {t('actions.cancel')}
           </button>
           <button
             type="button"
@@ -90,7 +89,7 @@ export function ResetModal({ open, onClose }: ResetModalProps) {
              * Texto base — coral. Visível na parte que ainda NÃO foi coberta
              * pela barra. Esse é o estado "default" do label.
              */}
-            <span className="btn--hold__label">Segure pra reiniciar</span>
+            <span className="btn--hold__label">{t('actions.holdToReset')}</span>
 
             {/*
              * Texto sobreposto — preto. É clipado por `inset(0 (1-p)*100% 0 0)`
@@ -106,7 +105,7 @@ export function ResetModal({ open, onClose }: ResetModalProps) {
               style={{ clipPath: `inset(0 ${(1 - progress) * 100}% 0 0)` }}
               aria-hidden="true"
             >
-              Segure pra reiniciar
+              {t('actions.holdToReset')}
             </span>
           </button>
         </div>

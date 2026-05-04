@@ -72,24 +72,39 @@ function formatWithSuffix(n: Decimal): string {
   return scaled.toFixed(2) + '\u00a0' + suffixForGroup(group);
 }
 
+/**
+ * Locale default usado quando nenhum é fornecido. Mantém o comportamento
+ * histórico do projeto (separador de milhar pt-BR = ponto). Componentes
+ * que querem respeitar o idioma do usuário passam `i18n.language`.
+ */
+const DEFAULT_LOCALE = 'pt-BR';
+
 /** Big-number formatter for live/derived values (rates, costs, totals).
  *  Accepts strings too so it can format Decimal-encoded values that
- *  overflow float64. */
-export function formatNum(n: Decimal | number | string | null | undefined): string {
+ *  overflow float64. O `locale` opcional troca o separador de milhar
+ *  no range 1.000–9.999 (pt-BR usa ".", en usa ","). Sufixos e os
+ *  formatos abaixo de 1000 (toFixed) NÃO mudam por locale. */
+export function formatNum(
+  n: Decimal | number | string | null | undefined,
+  locale: string = DEFAULT_LOCALE
+): string {
   const v = toDecimal(n);
-  if (v.lt(0)) return '-' + formatNum(v.neg());
+  if (v.lt(0)) return '-' + formatNum(v.neg(), locale);
   if (v.lt(10)) return v.toNumber().toFixed(2);
   if (v.lt(100)) return v.toNumber().toFixed(1);
   if (v.lt(1000)) return Math.floor(v.toNumber()).toString();
-  if (v.lt(10000)) return Math.floor(v.toNumber()).toLocaleString('pt-BR');
+  if (v.lt(10000)) return Math.floor(v.toNumber()).toLocaleString(locale);
   return formatWithSuffix(v);
 }
 
 /** Integer formatter for owned counts, action totals, etc. Same suffix
  *  rules as formatNum, but never shows decimals below 10.000. */
-export function formatInt(n: Decimal | number | string | null | undefined): string {
+export function formatInt(
+  n: Decimal | number | string | null | undefined,
+  locale: string = DEFAULT_LOCALE
+): string {
   const v = toDecimal(n);
-  if (v.lt(0)) return '-' + formatInt(v.neg());
-  if (v.lt(10000)) return Math.floor(v.toNumber()).toLocaleString('pt-BR');
+  if (v.lt(0)) return '-' + formatInt(v.neg(), locale);
+  if (v.lt(10000)) return Math.floor(v.toNumber()).toLocaleString(locale);
   return formatWithSuffix(v);
 }

@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { LanguageToggle } from './LanguageToggle';
 import { ThemeToggle } from './ThemeToggle';
 
 interface AppSidebarProps {
@@ -12,22 +14,24 @@ interface AppSidebarProps {
  * do conteúdo principal — comportamento de "empilhar" pra não cortar.
  */
 export function AppSidebar({ onRequestReset }: AppSidebarProps) {
+  const { t } = useTranslation();
   return (
     <aside className="app-sidebar">
       <div className="app-sidebar__top">
-        <h1 className="app-sidebar__title">Breaking Eternity</h1>
-        <div className="app-sidebar__subtitle">Generators</div>
+        <h1 className="app-sidebar__title">{t('app.title')}</h1>
+        <div className="app-sidebar__subtitle">{t('app.subtitle')}</div>
         <button
           type="button"
           className="btn btn--link btn--link-danger app-sidebar__reset"
           onClick={onRequestReset}
-          aria-label="Reiniciar progresso"
+          aria-label={t('actions.resetAriaLabel')}
         >
-          ↺ Reiniciar
+          ↺ {t('actions.reset')}
         </button>
       </div>
       <div className="app-sidebar__footer">
-        <span className="app-sidebar__version">v0.1</span>
+        <span className="app-sidebar__version">{t('app.version')}</span>
+        <LanguageToggle />
         <ThemeToggle />
       </div>
     </aside>

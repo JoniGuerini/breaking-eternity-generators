@@ -50,6 +50,32 @@ describe('formatNum', () => {
   it('string inválida cai pra 0', () => {
     expect(formatNum('banana')).toBe('0.00');
   });
+
+  describe('locale awareness (1.000–9.999)', () => {
+    it('locale en usa vírgula como separador de milhar', () => {
+      expect(formatNum(1234, 'en')).toBe('1,234');
+      expect(formatNum(9999, 'en')).toBe('9,999');
+    });
+
+    it('locale en-US idem', () => {
+      expect(formatNum(1234, 'en-US')).toBe('1,234');
+    });
+
+    it('locale pt-BR (default explícito) usa ponto', () => {
+      expect(formatNum(1234, 'pt-BR')).toBe('1.234');
+    });
+
+    it('faixas abaixo de 1.000 ignoram locale (fixed decimals)', () => {
+      // 5.43 é toFixed(2) — ponto sempre, independente de locale.
+      expect(formatNum(5.4271, 'en')).toBe('5.43');
+      expect(formatNum(5.4271, 'pt-BR')).toBe('5.43');
+    });
+
+    it('sufixos K/M/B/etc também são fixos (toFixed), independente de locale', () => {
+      expect(formatNum(12345, 'en')).toBe('12.35\u00a0K');
+      expect(formatNum(12345, 'pt-BR')).toBe('12.35\u00a0K');
+    });
+  });
 });
 
 describe('formatInt', () => {
@@ -64,5 +90,10 @@ describe('formatInt', () => {
 
   it('coerce null para 0', () => {
     expect(formatInt(null)).toBe('0');
+  });
+
+  it('respeita locale en pra separador de milhar', () => {
+    expect(formatInt(1234, 'en')).toBe('1,234');
+    expect(formatInt(1234, 'pt-BR')).toBe('1.234');
   });
 });

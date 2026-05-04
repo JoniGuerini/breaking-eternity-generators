@@ -14,27 +14,23 @@
  * existe a unidade base (segundos) ou só uma unidade > 0, retorna 1 termo.
  */
 
-interface Unit {
-  /** Sufixo curto exibido (ex.: 's', 'm', 'h', 'd', 'w', 'mo', 'y', 'dec', 'c', 'mil'). */
-  short: string;
-  /** Quantidade desta unidade equivalente a 1 da próxima. Ex.: 60s = 1m. */
-  perNext: number;
-}
-
 // Ordem ascendente: cada item descreve quantos "deste" cabem em "1 do próximo".
 // O último item não precisa de `perNext` real (Infinity = nunca promove).
-const UNITS: Unit[] = [
-  { short: 's', perNext: 60 },     // 60s = 1m
-  { short: 'm', perNext: 60 },     // 60m = 1h
-  { short: 'h', perNext: 24 },     // 24h = 1d
-  { short: 'd', perNext: 7 },      // 7d  = 1w
-  { short: 'w', perNext: 4 },      // 4w  ≈ 1mo  (mês simplificado em 28d → ver nota abaixo)
-  { short: 'mo', perNext: 12 },    // 12mo = 1y
-  { short: 'y', perNext: 10 },     // 10y  = 1 década
-  { short: 'dec', perNext: 10 },   // 10 décadas = 1 século
-  { short: 'c', perNext: 10 },     // 10 séculos = 1 milênio
+// `as const` garante que `UNITS[i].short` seja literal pro tipo `UnitShort`.
+const UNITS = [
+  { short: 's', perNext: 60 },        // 60s = 1m
+  { short: 'm', perNext: 60 },        // 60m = 1h
+  { short: 'h', perNext: 24 },        // 24h = 1d
+  { short: 'd', perNext: 7 },         // 7d  = 1w
+  { short: 'w', perNext: 4 },         // 4w  ≈ 1mo  (mês simplificado em 28d)
+  { short: 'mo', perNext: 12 },       // 12mo = 1y
+  { short: 'y', perNext: 10 },        // 10y  = 1 década
+  { short: 'dec', perNext: 10 },      // 10 décadas = 1 século
+  { short: 'c', perNext: 10 },        // 10 séculos = 1 milênio
   { short: 'mil', perNext: Infinity },
-];
+] as const;
+
+type UnitShort = (typeof UNITS)[number]['short'];
 
 // NOTA sobre mês: tratar mês como 4 semanas (= 28 dias) mantém a cascata
 // fechada (semana → mês → ano sem buracos). Se quisermos 30 dias em algum
@@ -71,6 +67,18 @@ function decompose(totalSeconds: number): Array<{ value: number; unitIndex: numb
   return out;
 }
 
+/** Opções de formatação. Permitem trocar os sufixos por traduções i18n. */
+export interface FormatPlaytimeOptions {
+  /**
+   * Mapeamento de sufixo padrão (em inglês) pro sufixo localizado. Ex.: em
+   * pt-BR, `s` continua `s` e `mo` vira `me` se quisermos. Se uma chave
+   * estiver ausente, mantemos o sufixo original.
+   */
+  unitLabels?: Partial<Record<UnitShort, string>>;
+  /** Texto exibido quando `totalSeconds <= 0`. Default: `"0s"`. */
+  zero?: string;
+}
+
 /**
  * Formata o tempo de jogo (em segundos) usando as 2 maiores unidades não-zero.
  *  - `0` → `"0s"`
@@ -85,16 +93,23 @@ function decompose(totalSeconds: number): Array<{ value: number; unitIndex: numb
  * `"1h 0m"`). Isso dá uma leitura previsível e evita flicker visual quando
  * uma das unidades menores zera.
  */
-export function formatPlaytime(totalSeconds: number): string {
-  if (!isFinite(totalSeconds) || totalSeconds <= 0) return '0s';
+export function formatPlaytime(
+  totalSeconds: number,
+  options: FormatPlaytimeOptions = {}
+): string {
+  const zero = options.zero ?? '0s';
+  if (!isFinite(totalSeconds) || totalSeconds <= 0) return zero;
 
   const parts = decompose(totalSeconds);
-  if (parts.length === 0) return '0s';
+  if (parts.length === 0) return zero;
+
+  const labelFor = (unitShort: UnitShort): string =>
+    options.unitLabels?.[unitShort] ?? unitShort;
 
   const top = parts[0];
   // Sem unidade abaixo (só temos segundos disponíveis): 1 termo basta.
   if (top.unitIndex === 0) {
-    return `${top.value}${UNITS[0].short}`;
+    return `${top.value}${labelFor(UNITS[0].short)}`;
   }
 
   // Procura a unidade imediatamente abaixo. Pode estar em 0 — mostramos mesmo
@@ -103,7 +118,7 @@ export function formatPlaytime(totalSeconds: number): string {
   const below = parts.find((p) => p.unitIndex === belowIndex);
   const belowValue = below ? below.value : 0;
 
-  return `${top.value}${UNITS[top.unitIndex].short} ${belowValue}${UNITS[belowIndex].short}`;
+  return `${top.value}${labelFor(UNITS[top.unitIndex].short)} ${belowValue}${labelFor(UNITS[belowIndex].short)}`;
 }
 
 /**

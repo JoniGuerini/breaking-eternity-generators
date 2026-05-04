@@ -58,6 +58,28 @@ describe('formatPlaytime', () => {
   });
 });
 
+describe('formatPlaytime - localized unit labels', () => {
+  it('aplica unitLabels customizadas', () => {
+    expect(
+      formatPlaytime(125, {
+        unitLabels: { m: 'min', s: 'sec' },
+      })
+    ).toBe('2min 5sec');
+  });
+
+  it('mantém defaults pras unidades não fornecidas', () => {
+    expect(
+      formatPlaytime(3725, {
+        unitLabels: { h: 'hr' }, // sobrescreve só h, m fica 'm'
+      })
+    ).toBe('1hr 2m');
+  });
+
+  it('aplica zero customizado', () => {
+    expect(formatPlaytime(0, { zero: 'agora' })).toBe('agora');
+  });
+});
+
 describe('getPlaytimeSeconds', () => {
   it('retorna diferença em segundos floor', () => {
     expect(getPlaytimeSeconds(1000, 5500)).toBe(4);

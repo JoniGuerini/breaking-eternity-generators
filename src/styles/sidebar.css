@@ -63,11 +63,13 @@
 }
 
 /*
- * Botão de toggle de tema. Stack do botão: 14px do ícone + 6px de padding
- * em volta = ~26x26 hit-area. Sem borda, sem fundo — alinha visualmente
- * com o `v0.1` ao lado.
+ * Botões discretos do footer da sidebar (toggle de tema + idioma).
+ *
+ * Mesmo tamanho de hit-area, mesma cor base (`--text-mute`), mesmo hover
+ * (intensifica pra `--text`). Evita criar 2 estilos paralelos.
  */
-.theme-toggle {
+.theme-toggle,
+.lang-toggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -77,20 +79,34 @@
   color: var(--text-mute);
   cursor: pointer;
   transition: color 0.15s ease, transform 0.15s ease;
-  /* Reset extra pra garantir que o reset global não interfira. */
   border-radius: 0;
 }
 
-.theme-toggle:hover {
+.theme-toggle:hover,
+.lang-toggle:hover {
   color: var(--text);
 }
 
-.theme-toggle:active {
+.theme-toggle:active,
+.lang-toggle:active {
   transform: translateY(1px);
 }
 
 .theme-toggle svg {
   display: block;
+}
+
+/*
+ * O LanguageToggle é texto puro ("PT" / "EN"). Usa a fonte mono já que
+ * está num footer com `font-family: var(--font-mono)` herdada, mas
+ * forçamos peso pra dar identidade de "label de ação".
+ */
+.lang-toggle {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 /* Em viewports não largas o suficiente pra sidebar caber ao lado do

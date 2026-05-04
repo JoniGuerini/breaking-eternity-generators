@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../hooks/useTheme';
 
 /**
@@ -11,6 +12,7 @@ import { useTheme } from '../hooks/useTheme';
  * carregamento extra. Tamanho 14px combina com o footer da sidebar.
  */
 export function ThemeToggle() {
+  const { t } = useTranslation();
   const { theme, toggle } = useTheme();
   const isLight = theme === 'light';
 
@@ -19,8 +21,8 @@ export function ThemeToggle() {
       type="button"
       className="theme-toggle"
       onClick={toggle}
-      aria-label={isLight ? 'Mudar para tema escuro' : 'Mudar para tema claro'}
-      title={isLight ? 'Tema claro' : 'Tema escuro'}
+      aria-label={isLight ? t('theme.switchToDark') : t('theme.switchToLight')}
+      title={isLight ? t('theme.lightLabel') : t('theme.darkLabel')}
     >
       {isLight ? <SunIcon /> : <MoonIcon />}
     </button>

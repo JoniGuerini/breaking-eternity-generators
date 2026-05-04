@@ -1,0 +1,59 @@
+{
+  "app": {
+    "title": "Breaking Eternity",
+    "subtitle": "Generators",
+    "version": "v0.1"
+  },
+  "actions": {
+    "reset": "Reset",
+    "resetAriaLabel": "Reset progress",
+    "cancel": "Cancel",
+    "buy": "Buy",
+    "insufficientResource": "Not enough resource",
+    "holdToReset": "Hold to reset"
+  },
+  "resource": {
+    "label": "Base Resource",
+    "rateSuffix": "/s"
+  },
+  "generator": {
+    "name": "Generator {{id}}",
+    "owned": "Owned",
+    "produces": "Produces",
+    "tier": "Tier",
+    "unlocksWith": "Unlocks at"
+  },
+  "playtime": {
+    "label": "Playtime",
+    "ariaLabel": "Playtime",
+    "units": {
+      "seconds": "s",
+      "minutes": "m",
+      "hours": "h",
+      "days": "d",
+      "weeks": "w",
+      "months": "mo",
+      "years": "y",
+      "decades": "dec",
+      "centuries": "c",
+      "millennia": "mil"
+    },
+    "zero": "0s"
+  },
+  "modal": {
+    "resetTitle": "Reset progress?",
+    "resetBody": "This will erase everything you've accumulated and start a brand new game from scratch. There's no way back."
+  },
+  "theme": {
+    "switchToLight": "Switch to light theme",
+    "switchToDark": "Switch to dark theme",
+    "lightLabel": "Light theme",
+    "darkLabel": "Dark theme"
+  },
+  "language": {
+    "switchToEnglish": "Switch to English",
+    "switchToPortuguese": "Switch to Portuguese",
+    "ptShort": "PT",
+    "enShort": "EN"
+  }
+}

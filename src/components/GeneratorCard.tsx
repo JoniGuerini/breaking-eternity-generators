@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { getBuyCost } from '../game/config';
 import { useGameStore } from '../game/store';
 import { formatInt, formatNum } from '../utils/format';
@@ -9,6 +10,7 @@ interface GeneratorCardProps {
 }
 
 export function GeneratorCard({ generatorId }: GeneratorCardProps) {
+  const { t, i18n } = useTranslation();
   // Subscreve tick. O gerador em si é mutado in-place no store — buscamos
   // a referência atual a cada render, garantindo dado fresco.
   useGameStore((s) => s.tick);
@@ -20,11 +22,11 @@ export function GeneratorCard({ generatorId }: GeneratorCardProps) {
     return (
       <div className="generator locked">
         <div className="gen-info">
-          <div className="gen-name">Gerador {gen.id}</div>
+          <div className="gen-name">{t('generator.name', { id: gen.id })}</div>
         </div>
         <div className="gen-action">
           <LockedIndicator
-            unlockThreshold={formatNum(gen.unlockThreshold)}
+            unlockThreshold={formatNum(gen.unlockThreshold, i18n.language)}
             ratio={state.resource.div(gen.unlockThreshold).toNumber()}
           />
         </div>
@@ -36,14 +38,20 @@ export function GeneratorCard({ generatorId }: GeneratorCardProps) {
 }
 
 function UnlockedCard({ generatorId }: { generatorId: number }) {
+  const { t, i18n } = useTranslation();
   const state = useGameStore.getState();
   const gen = state.generators[generatorId - 1];
+  const buy = useGameStore((s) => s.buy);
   if (!gen) return null;
 
   const cost = getBuyCost(gen);
   const affordable = state.resource.gte(cost);
-  const buy = useGameStore((s) => s.buy);
-  const target = gen.id === 1 ? 'Recurso Base' : `Gerador ${gen.id - 1}`;
+  // Target da produção: Gen1 produz o recurso base; demais produzem o gerador
+  // anterior. Tradução é interpolada via i18n.
+  const target =
+    gen.id === 1
+      ? t('resource.label')
+      : t('generator.name', { id: gen.id - 1 });
   const totalRate = gen.count.mul(gen.productionRate);
   const hasCount = gen.count.gt(0);
 
@@ -51,13 +59,13 @@ function UnlockedCard({ generatorId }: { generatorId: number }) {
     <div className={`generator${hasCount ? ' has-count' : ''}`}>
       <div className="gen-card">
         <div className="gen-card__head">
-          <div className="gen-name">Gerador {gen.id}</div>
+          <div className="gen-name">{t('generator.name', { id: gen.id })}</div>
           {/* Bloco da quantidade: VALOR em cima, label embaixo.
               `--reversed` usa column-reverse, então o ÚLTIMO filho do DOM
               fica no topo visualmente. Por isso a label vem antes no JSX. */}
           <div className="gen-card__stack gen-card__stack--reversed gen-card__stack--right">
-            <span className="label">Possuídos</span>
-            <span className="value">{formatInt(gen.count)}</span>
+            <span className="label">{t('generator.owned')}</span>
+            <span className="value">{formatInt(gen.count, i18n.language)}</span>
           </div>
         </div>
 
@@ -66,14 +74,16 @@ function UnlockedCard({ generatorId }: { generatorId: number }) {
         <div className="gen-card__metrics">
           {/* Esquerda: PRODUZ em cima, taxa total · target embaixo */}
           <div className="gen-card__stack">
-            <span className="label">Produz</span>
+            <span className="label">{t('generator.produces')}</span>
             <span className="value">
-              {formatNum(totalRate)}/s <span className="target">· {target}</span>
+              {formatNum(totalRate, i18n.language)}
+              {t('resource.rateSuffix')}{' '}
+              <span className="target">· {target}</span>
             </span>
           </div>
           {/* Direita: TIER em cima, numeral romano embaixo */}
           <div className="gen-card__stack gen-card__stack--right">
-            <span className="label">Tier</span>
+            <span className="label">{t('generator.tier')}</span>
             <span className="value">{toRoman(gen.id)}</span>
           </div>
         </div>
@@ -86,9 +96,9 @@ function UnlockedCard({ generatorId }: { generatorId: number }) {
           disabled={!affordable}
           onClick={() => buy(generatorId)}
         >
-          <span>{affordable ? 'Comprar' : 'Recurso insuficiente'}</span>
+          <span>{affordable ? t('actions.buy') : t('actions.insufficientResource')}</span>
           <span className={`gen-cost${affordable ? ' affordable' : ''}`}>
-            {formatNum(cost)}
+            {formatNum(cost, i18n.language)}
           </span>
         </button>
       </div>
@@ -102,9 +112,10 @@ interface LockedIndicatorProps {
 }
 
 function LockedIndicator({ unlockThreshold, ratio }: LockedIndicatorProps) {
+  const { t } = useTranslation();
   return (
     <div className="gen-pending">
-      <span className="gen-pending-label">Desbloqueia com</span>
+      <span className="gen-pending-label">{t('generator.unlocksWith')}</span>
       <span className="gen-pending-value">{unlockThreshold}</span>
       <ProgressBar ratio={ratio} />
     </div>
