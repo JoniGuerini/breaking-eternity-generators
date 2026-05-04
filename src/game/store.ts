@@ -153,3 +153,17 @@ export function getStateSnapshot(): GameState {
 export function persistNow(): void {
   persist(getStateSnapshot());
 }
+
+/**
+ * Aplica progresso "offline" ao estado vivo — usado pelo loop ao detectar
+ * que a aba ficou em background e está voltando.
+ *
+ * Diferente do offline progress do boot, aqui o store já existe e está sendo
+ * observado pelo React, então emitimos `notify()` pra forçar um re-render
+ * imediato com o novo total (sem esperar o próximo tick "natural" do rAF).
+ */
+export function applyCatchUpProgress(elapsedSeconds: number): void {
+  const state = useGameStore.getState();
+  applyOfflineProgressMutating(state, elapsedSeconds);
+  state.notify();
+}

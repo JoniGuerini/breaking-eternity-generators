@@ -1,4 +1,4 @@
-import { persistNow, useGameStore } from './store';
+import { applyCatchUpProgress, persistNow, useGameStore } from './store';
 
 /**
  * Game loop e auto-save. Roda fora da árvore React.
@@ -7,6 +7,10 @@ import { persistNow, useGameStore } from './store';
  *  - Notifica React (`store.notify()`) numa cadência reduzida (~15Hz)
  *    pra evitar re-render em todo frame.
  *  - Auto-save a cada 5s + ao esconder a aba + ao fechar.
+ *  - Catch-up automático ao voltar do background: como o rAF é throttled
+ *    (ou pausado) quando a aba não está visível, salvamos o timestamp em
+ *    `hidden` e, ao voltar a `visible`, aplicamos o progresso correspondente
+ *    em offline mode (mesma lógica usada no boot).
  *  - Flag `isResetting` impede que o `beforeunload` recrie o save logo
  *    após o `removeItem` no reset.
  */
@@ -19,6 +23,17 @@ let lastTime = 0;
 let lastNotify = 0;
 let started = false;
 let isResetting = false;
+
+/**
+ * Wall-clock timestamp (`Date.now()`) do momento em que a aba ficou hidden.
+ * `null` quando a aba está visível.
+ *
+ * Usamos `Date.now()` (não `performance.now()`) porque queremos contar TEMPO
+ * DE PAREDE: o usuário fica longe X segundos, queremos creditar X segundos
+ * de produção. `performance.now()` mede tempo do processo, que pode ser
+ * pausado em background dependendo do browser.
+ */
+let hiddenAt: number | null = null;
 
 function tick(now: number) {
   const dt = (now - lastTime) / 1000;
@@ -41,7 +56,22 @@ function saveIfAllowed() {
 
 function handleVisibilityChange() {
   if (document.visibilityState === 'hidden') {
+    // Marca o instante exato em que a aba escondeu, pra calcular delta na volta.
+    hiddenAt = Date.now();
     saveIfAllowed();
+  } else if (document.visibilityState === 'visible' && hiddenAt !== null) {
+    // Catch-up: aplica o progresso correspondente ao tempo que ficou em
+    // background. A simulação roda em passos limitados por DT_CAP dentro do
+    // store, então cobrir minutos/horas é seguro.
+    const elapsedSeconds = (Date.now() - hiddenAt) / 1000;
+    hiddenAt = null;
+    applyCatchUpProgress(elapsedSeconds);
+
+    // Reseta a base do rAF: sem isso, o próximo `tick` somaria todo o gap
+    // como `dt` (que seria clampado pelo DT_CAP, mas ainda assim duplica
+    // parte do progresso já creditado pelo catch-up).
+    lastTime = performance.now();
+    lastNotify = lastTime;
   }
 }
 
