@@ -8,12 +8,13 @@ export interface LoadedGameState {
 }
 
 /**
- * Cria o estado inicial — 10 de Recurso Base (suficiente pra comprar 1× Gen1)
- * e a lista com Gerador 1 desbloqueado e Gerador 2 visível mas bloqueado.
+ * Cria o estado inicial — 1 de Recurso Base (suficiente pra comprar 1× Gen1
+ * cujo custo base agora é 1) e a lista com Gerador 1 desbloqueado e
+ * Gerador 2 visível mas bloqueado.
  */
 export function makeFreshState(): GameState {
   return {
-    resource: D(10),
+    resource: D(1),
     generators: [createGenerator(1, true), createGenerator(2, false)],
     startedAt: Date.now(),
   };

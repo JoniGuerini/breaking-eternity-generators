@@ -51,6 +51,40 @@ describe('formatNum', () => {
     expect(formatNum('banana')).toBe('0.00');
   });
 
+  describe('valores pequenos (rates de geradores tier alto)', () => {
+    it.each([
+      // Faixa atual (≥ 0.01) continua com 2 decimais
+      [0.5, '0.50'],
+      [0.1, '0.10'],
+      [0.085, '0.09'], // arredonda a 2 decimais
+      [0.05, '0.05'],
+      [0.01, '0.01'],
+      // ≥ 0.001 → 3 decimais
+      [0.005, '0.005'],
+      [0.001, '0.001'],
+      // ≥ 0.0001 → 4 decimais
+      [0.0009, '0.0009'],
+      [0.0004, '0.0004'],
+      // ≥ 1e-5 → 5 decimais
+      [0.00009, '0.00009'],
+      // ≥ 1e-7 → 7 decimais
+      [0.0000001, '0.0000001'],
+      // < 1e-8 → notação científica
+      [1e-9, '1.00e-9'],
+      [1.234e-12, '1.23e-12'],
+    ])('formatNum(%p) === %p', (input, expected) => {
+      expect(formatNum(input)).toBe(expected);
+    });
+
+    it('zero exato continua "0.00" (sem virar científica)', () => {
+      expect(formatNum(0)).toBe('0.00');
+    });
+
+    it('formato preserva sinal pra negativos pequenos', () => {
+      expect(formatNum(-0.005)).toBe('-0.005');
+    });
+  });
+
   describe('locale awareness (1.000–9.999)', () => {
     it('locale en usa vírgula como separador de milhar', () => {
       expect(formatNum(1234, 'en')).toBe('1,234');
