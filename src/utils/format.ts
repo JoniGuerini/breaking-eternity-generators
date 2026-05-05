@@ -87,8 +87,8 @@ const DEFAULT_LOCALE = 'pt-BR';
  * decrescente, ex.: Gen 20 produz ~0.0039/s).
  *
  * Faixas:
- *   n ≥ 0.01     → 2 casas (atual: "0.10")
- *   ≥ 0.001      → 3 casas ("0.005")
+ *   n ≥ 1        → 2 casas (1.50, 9.99) — comportamento "humano" tradicional
+ *   < 1 e ≥ 0.001 → 3 casas, com TRIM de zeros à direita (0.085, 0.1, 0.005)
  *   ≥ 0.0001     → 4 casas
  *   ≥ 1e-5       → 5 casas
  *   ...
@@ -97,7 +97,7 @@ const DEFAULT_LOCALE = 'pt-BR';
  */
 function smallNumberDecimals(value: number): number {
   // value sempre > 0 e < 10 quando esta função é chamada.
-  if (value >= 0.01) return 2;
+  if (value >= 1) return 2;
   if (value >= 0.001) return 3;
   if (value >= 1e-4) return 4;
   if (value >= 1e-5) return 5;
@@ -109,6 +109,22 @@ function smallNumberDecimals(value: number): number {
 /** Threshold abaixo do qual mudamos pra notação científica. */
 const SCIENTIFIC_THRESHOLD = 1e-8;
 
+/**
+ * Remove zeros decimais à direita supérfluos. Mantém pelo menos uma casa
+ * após o ponto pra preservar a "vibe" de valor decimal: "0.1" é mais
+ * legível como "0.1" que como "0", e "0.085" é mais informativo que
+ * "0.09".
+ *
+ * Aplica APENAS quando a string tem ponto decimal — números inteiros
+ * passam intactos. Nunca remove o "1." virando "1": se o número tem
+ * forma decimal, mantém pelo menos uma casa.
+ */
+function trimTrailingZeros(s: string): string {
+  if (!s.includes('.')) return s;
+  // Remove zeros à direita. Se sobrar um "." solto, tira ele também.
+  return s.replace(/\.?0+$/, (match) => (match.startsWith('.') ? '.0' : ''));
+}
+
 function formatSmallPositive(v: Decimal): string {
   const n = v.toNumber();
   // `toNumber()` colapsa pra 0 abaixo de ~5e-324; nesse caso (e quando
@@ -118,7 +134,11 @@ function formatSmallPositive(v: Decimal): string {
     // Decimal.toExponential(2) → "1.23e-9", "5.00e-23", etc.
     return v.toExponential(2);
   }
-  return n.toFixed(smallNumberDecimals(n));
+  const decimals = smallNumberDecimals(n);
+  const fixed = n.toFixed(decimals);
+  // Trim de zeros à direita SÓ pra valores < 1 — pra n ≥ 1 mantemos as
+  // 2 casas fixas (visual "1.50" preferido sobre "1.5" em medições).
+  return n < 1 ? trimTrailingZeros(fixed) : fixed;
 }
 
 /** Big-number formatter for live/derived values (rates, costs, totals).

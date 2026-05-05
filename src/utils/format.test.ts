@@ -53,16 +53,18 @@ describe('formatNum', () => {
 
   describe('valores pequenos (rates de geradores tier alto)', () => {
     it.each([
-      // Faixa atual (≥ 0.01) continua com 2 decimais
-      [0.5, '0.50'],
-      [0.1, '0.10'],
-      [0.085, '0.09'], // arredonda a 2 decimais
+      // Faixa < 1: até 3 decimais com TRIM de zeros à direita
+      // (precisão sem ruído visual — 0.085 mostra 0.085, não 0.09).
+      [0.5, '0.5'],
+      [0.1, '0.1'],
+      [0.085, '0.085'],
+      [0.072, '0.072'],
       [0.05, '0.05'],
       [0.01, '0.01'],
-      // ≥ 0.001 → 3 decimais
+      // 0.005 e 0.001 — três casas significativas
       [0.005, '0.005'],
       [0.001, '0.001'],
-      // ≥ 0.0001 → 4 decimais
+      // < 0.001 → 4 decimais (com trim)
       [0.0009, '0.0009'],
       [0.0004, '0.0004'],
       // ≥ 1e-5 → 5 decimais
@@ -74,6 +76,12 @@ describe('formatNum', () => {
       [1.234e-12, '1.23e-12'],
     ])('formatNum(%p) === %p', (input, expected) => {
       expect(formatNum(input)).toBe(expected);
+    });
+
+    it('valores ≥ 1 mantêm 2 casas fixas (sem trim)', () => {
+      // Mantém visual "humano" na faixa principal de leitura.
+      expect(formatNum(1.5)).toBe('1.50');
+      expect(formatNum(1.0)).toBe('1.00');
     });
 
     it('zero exato continua "0.00" (sem virar científica)', () => {
