@@ -1,9 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import { LanguageToggle } from './LanguageToggle';
-import { ThemeToggle } from './ThemeToggle';
+import { ThemePaletteButton } from './ThemePaletteButton';
 
 interface AppSidebarProps {
   onRequestReset: () => void;
+  onRequestThemeSelect: () => void;
 }
 
 /**
@@ -13,7 +14,7 @@ interface AppSidebarProps {
  * Em telas estreitas (≤ 1100px) o CSS reposiciona como bloco normal no topo
  * do conteúdo principal — comportamento de "empilhar" pra não cortar.
  */
-export function AppSidebar({ onRequestReset }: AppSidebarProps) {
+export function AppSidebar({ onRequestReset, onRequestThemeSelect }: AppSidebarProps) {
   const { t } = useTranslation();
   return (
     <aside className="app-sidebar">
@@ -32,7 +33,7 @@ export function AppSidebar({ onRequestReset }: AppSidebarProps) {
       <div className="app-sidebar__footer">
         <span className="app-sidebar__version">{t('app.version')}</span>
         <LanguageToggle />
-        <ThemeToggle />
+        <ThemePaletteButton onClick={onRequestThemeSelect} />
       </div>
     </aside>
   );

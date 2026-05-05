@@ -8,8 +8,8 @@ import type { SupportedLanguage } from '../i18n';
  *  - O texto curto bate visualmente com o `v0.1` ao lado e com o ícone
  *    do tema, mantendo o footer da sidebar coeso.
  *
- * Mostra a sigla do idioma ATUAL (igual à convenção do `ThemeToggle`); o
- * `aria-label` descreve a ação do clique (alternar para o outro).
+ * Mostra a sigla do idioma ATUAL; o `aria-label` descreve a ação do
+ * clique (alternar para o outro).
  */
 export function LanguageToggle() {
   const { t, i18n } = useTranslation();

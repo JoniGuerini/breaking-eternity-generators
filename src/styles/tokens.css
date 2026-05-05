@@ -1,16 +1,23 @@
 /*
- * Design tokens — paleta neutra "trabalho em andamento".
+ * Design tokens — paletas dos 5 temas disponíveis.
  *
- * Esquema preto/branco/cinza enquanto o foco do desenvolvimento está em
- * mecânica e balanceamento, não em visual. Quando voltarmos pro visual,
- * basta editar este arquivo — todo o app consome via tokens.
+ * Único arquivo onde vivem cores. Componentes consomem via `var(--bg)`,
+ * `var(--text)`, etc., e re-coloram automaticamente quando o atributo
+ * `data-theme` muda no `<html>`.
  *
- * Dois temas:
- *  - Default (`:root`)        → dark mode (preto/grafite)
- *  - `[data-theme="light"]`   → light mode (off-white quente)
+ * Cinco temas:
+ *  - Default (`:root`)               → dark (preto/grafite, branco neutro)
+ *  - `[data-theme="light"]`          → light (off-white quente, preto profundo)
+ *  - `[data-theme="midnight"]`       → midnight (azul-meia-noite, ciano frio)
+ *  - `[data-theme="terracotta"]`     → terracotta (terroso, dourado)
+ *  - `[data-theme="forest"]`         → forest (verde-musgo, âmbar)
  *
  * O atributo `data-theme` é definido em `<html>` por `useTheme`. Sem o
- * atributo, prevalece o dark.
+ * atributo, prevalece o dark. Todos os blocos definem o MESMO conjunto
+ * de variáveis pra evitar fallback acidental do `:root`.
+ *
+ * Pra adicionar um tema novo: copie um bloco existente, troque os
+ * valores, e atualize THEME_SWATCHES em useTheme.ts.
  */
 
 :root {
@@ -131,4 +138,575 @@
   --mute-tint: rgba(154, 149, 138, 0.18);
   --danger-border: rgba(194, 95, 79, 0.45);
   --backdrop: rgba(245, 243, 238, 0.78);
+}
+
+/*
+ * Midnight — azul-meia-noite com acento ciano frio.
+ *
+ * Atmosfera "espaço/insônia produtiva": fundo escuro azulado profundo
+ * (não preto puro), cards levemente mais claros e azulados pra criar
+ * camadas. Acento ciano-pálido (`--accent`) traz contraste sem queimar
+ * a vista. Coral de perigo levemente puxado pro magenta pra dialogar
+ * melhor com a paleta fria.
+ *
+ * Bordas: cinza-azulado, mais visíveis que no dark default porque o
+ * fundo é menos preto.
+ */
+[data-theme='midnight'] {
+  --bg: #0b1220;
+  --bg-card: #152033;
+  --bg-card-hover: #1c2942;
+  --bg-elevated: #1f2e4a;
+  --bg-locked: #0e1828;
+
+  --border: #243352;
+  --border-bright: #34466b;
+  --border-deep: #11192a;
+  --border-locked: #1b2540;
+
+  --text: #dde6f5;
+  --text-strong: #ffffff;
+  --text-dim: #8a9bbb;
+  --text-mute: #5e6e8c;
+  --text-locked: #455167;
+
+  /* Acento ciano-frio: destaca sobre azul profundo sem brilhar demais. */
+  --accent: #7ec5ff;
+  --accent-strong: #a8d8ff;
+  --accent-dim: #5b9fd9;
+  --accent-deep: #2a3a55;
+
+  --success: #9ec1d8;
+  --locked: #2e3d5e;
+  --danger: #ff7a8a;
+
+  --accent-tint: rgba(126, 197, 255, 0.10);
+  --accent-glow: transparent;
+  --success-glow: transparent;
+  --mute-tint: rgba(94, 110, 140, 0.20);
+  --danger-border: rgba(255, 122, 138, 0.4);
+  --backdrop: rgba(11, 18, 32, 0.82);
+}
+
+/*
+ * Terracotta — terroso e quente, evocando café/biblioteca à noite.
+ *
+ * Fundo marrom escuro avermelhado (não puro preto), cards um tom acima
+ * pra criar materialidade. Acento dourado pálido nas hierarquias e em
+ * "consegue pagar". Texto creme quente, sem estridência.
+ *
+ * Coral de perigo aqui se confunde menos com o resto porque a paleta
+ * já é quente — usamos um vermelho mais saturado pra destacar.
+ */
+[data-theme='terracotta'] {
+  --bg: #1f1612;
+  --bg-card: #2c2018;
+  --bg-card-hover: #362820;
+  --bg-elevated: #3d2d23;
+  --bg-locked: #251b15;
+
+  --border: #4a3528;
+  --border-bright: #6b4a36;
+  --border-deep: #1a120e;
+  --border-locked: #38281e;
+
+  --text: #f0e3d3;
+  --text-strong: #faf2e3;
+  --text-dim: #b59880;
+  --text-mute: #7d6353;
+  --text-locked: #5a4537;
+
+  /* Acento dourado-pálido — quente mas não saturado, lê bem sobre marrom. */
+  --accent: #e8a86b;
+  --accent-strong: #f5c188;
+  --accent-dim: #b88451;
+  --accent-deep: #4a3525;
+
+  --success: #c9a988;
+  --locked: #3f2e23;
+  --danger: #e25c4a;
+
+  --accent-tint: rgba(232, 168, 107, 0.10);
+  --accent-glow: transparent;
+  --success-glow: transparent;
+  --mute-tint: rgba(125, 99, 83, 0.20);
+  --danger-border: rgba(226, 92, 74, 0.45);
+  --backdrop: rgba(31, 22, 18, 0.82);
+}
+
+/*
+ * Forest — verde-musgo profundo com acento de tronco/caramelo.
+ *
+ * Fundo verde-azulado escuro, cards num oliva mais claro (as "folhas"
+ * dominam o tema). Acento em caramelo amadeirado — evoca o tronco das
+ * árvores, contrasta naturalmente com o verde das folhas e dá o calor
+ * que a paleta puramente verde não tem. Coral de perigo levemente
+ * quente pra dialogar com o caramelo sem se confundir com ele.
+ */
+[data-theme='forest'] {
+  --bg: #0e1612;
+  --bg-card: #15201b;
+  --bg-card-hover: #1c2a23;
+  --bg-elevated: #21302a;
+  --bg-locked: #111a16;
+
+  --border: #243530;
+  --border-bright: #354a42;
+  --border-deep: #0e1814;
+  --border-locked: #1a2622;
+
+  --text: #dfe8df;
+  --text-strong: #f4faf4;
+  --text-dim: #8aa090;
+  --text-mute: #5e7368;
+  --text-locked: #455449;
+
+  /* Acento caramelo amadeirado — cor de tronco molhado, casa com o
+   * verde-musgo dos backgrounds e ainda lê bem como texto. */
+  --accent: #c19868;
+  --accent-strong: #d6b083;
+  --accent-dim: #997751;
+  --accent-deep: #3a2d1f;
+
+  /* Success continua num tom "vegetal" pra não chocar — agora é um
+   * verde-oliva mais discreto que combina com o acento marrom. */
+  --success: #a8b390;
+  --locked: #2c3a32;
+  --danger: #e07a6a;
+
+  --accent-tint: rgba(193, 152, 104, 0.10);
+  --accent-glow: transparent;
+  --success-glow: transparent;
+  --mute-tint: rgba(94, 115, 104, 0.20);
+  --danger-border: rgba(224, 122, 106, 0.4);
+  --backdrop: rgba(14, 22, 18, 0.82);
+}
+
+/*
+ * Crimson — borgonha profundo com acento dourado.
+ *
+ * Atmosfera de salão antigo: vermelho-vinho como cor de fundo (não preto),
+ * cards num tom levemente mais escuro/avermelhado pra criar profundidade
+ * em vez de mero contraste. Acento dourado pálido pra letras importantes
+ * — quente, mas não estridente. Coral de perigo aqui empurrado pro pêssego
+ * pra não brigar com o vinho dominante.
+ */
+[data-theme='crimson'] {
+  --bg: #1a0a0d;
+  --bg-card: #26111a;
+  --bg-card-hover: #2f1722;
+  --bg-elevated: #38192a;
+  --bg-locked: #1e0d12;
+
+  --border: #3d1f2c;
+  --border-bright: #582c3f;
+  --border-deep: #18080d;
+  --border-locked: #2a1019;
+
+  --text: #f0d9d4;
+  --text-strong: #fdebe5;
+  --text-dim: #b08a87;
+  --text-mute: #785659;
+  --text-locked: #4d3438;
+
+  /* Acento dourado pálido — cor de relicário, não néon. */
+  --accent: #d4a55a;
+  --accent-strong: #ebc278;
+  --accent-dim: #a37e3e;
+  --accent-deep: #3a2a1c;
+
+  --success: #c79f6f;
+  --locked: #382028;
+  --danger: #ff8a7a;
+
+  --accent-tint: rgba(212, 165, 90, 0.10);
+  --accent-glow: transparent;
+  --success-glow: transparent;
+  --mute-tint: rgba(120, 86, 89, 0.22);
+  --danger-border: rgba(255, 138, 122, 0.4);
+  --backdrop: rgba(26, 10, 13, 0.82);
+}
+
+/*
+ * Glacier — branco gelado e azul-acinzentado, atmosfera ártica/clínica.
+ *
+ * Fundo off-white frio (puxa pro azul, não pro creme), cards em branco
+ * puro pra criar separação. Texto azul-marinho profundo. Acento azul-
+ * acinzentado médio — tom de pedra molhada. Bordas mais visíveis que
+ * em um light qualquer porque a paleta inteira é fria e clara, então
+ * cinza neutro sumiria.
+ */
+[data-theme='glacier'] {
+  --bg: #e8edf2;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f5f8fb;
+  --bg-elevated: #ffffff;
+  --bg-locked: #dde3ea;
+
+  --border: #c5cdd6;
+  --border-bright: #98a3b0;
+  --border-deep: #d8dee5;
+  --border-locked: #ccd3da;
+
+  --text: #1c2733;
+  --text-strong: #0a1219;
+  --text-dim: #5a6878;
+  --text-mute: #8b96a3;
+  --text-locked: #a8b3bf;
+
+  /* Acento azul-acinzentado — tom mineral, não brilhante. */
+  --accent: #3f5973;
+  --accent-strong: #2a3f56;
+  --accent-dim: #5a738c;
+  --accent-deep: #c5cdd6;
+
+  --success: #6a7e8e;
+  --locked: #b8c0c8;
+  --danger: #c44a52;
+
+  --accent-tint: rgba(63, 89, 115, 0.08);
+  --accent-glow: transparent;
+  --success-glow: transparent;
+  --mute-tint: rgba(139, 150, 163, 0.18);
+  --danger-border: rgba(196, 74, 82, 0.45);
+  --backdrop: rgba(232, 237, 242, 0.78);
+}
+
+/*
+ * Carbon — preto absoluto com acento vermelho-sangue.
+ *
+ * O tema mais agressivo da coleção. Fundo preto puro (#000), cards num
+ * cinza muito escuro só pra serem visíveis sobre o fundo. Acento
+ * vermelho saturado — único toque de cor da paleta, sinaliza "ferramenta",
+ * "perigo controlado", "performance". Texto cinza claro neutro.
+ *
+ * Aqui `--danger` e `--accent` vivem perto: o vermelho é tanto a marca
+ * visual quanto a cor de alerta. Pra diferenciar, `--danger` é ainda
+ * mais saturado/coral.
+ */
+[data-theme='carbon'] {
+  --bg: #000000;
+  --bg-card: #0d0d0d;
+  --bg-card-hover: #181818;
+  --bg-elevated: #1f1f1f;
+  --bg-locked: #050505;
+
+  --border: #1f1f1f;
+  --border-bright: #2f2f2f;
+  --border-deep: #000000;
+  --border-locked: #131313;
+
+  --text: #e6e6e6;
+  --text-strong: #ffffff;
+  --text-dim: #888888;
+  --text-mute: #555555;
+  --text-locked: #383838;
+
+  /* Acento vermelho-sangue — cor de status LED industrial. */
+  --accent: #e63946;
+  --accent-strong: #ff5566;
+  --accent-dim: #b32835;
+  --accent-deep: #2a0a0d;
+
+  --success: #aaaaaa;
+  --locked: #2a2a2a;
+  --danger: #ff4d5e;
+
+  --accent-tint: rgba(230, 57, 70, 0.08);
+  --accent-glow: transparent;
+  --success-glow: transparent;
+  --mute-tint: rgba(85, 85, 85, 0.18);
+  --danger-border: rgba(255, 77, 94, 0.4);
+  --backdrop: rgba(0, 0, 0, 0.85);
+}
+
+/*
+ * Lavender — roxo-acinzentado contemplativo.
+ *
+ * Fundo púrpura escuro empoeirado (lê como roxo, não preto-com-tinta),
+ * cards num tom levemente mais claro. Acento lilás pálido pra letras
+ * importantes — quase pastel, atmosfera "biblioteca antiga, cadernos de
+ * herbário". Coral de perigo levemente rosado pra dialogar com a paleta
+ * fria-quente.
+ */
+[data-theme='lavender'] {
+  --bg: #1a1622;
+  --bg-card: #241f30;
+  --bg-card-hover: #2c263b;
+  --bg-elevated: #332c44;
+  --bg-locked: #1d1828;
+
+  --border: #34304a;
+  --border-bright: #4a4565;
+  --border-deep: #15121d;
+  --border-locked: #28233a;
+
+  --text: #e6dff0;
+  --text-strong: #f5eeff;
+  --text-dim: #9c92b3;
+  --text-mute: #6a6087;
+  --text-locked: #4a4264;
+
+  /* Acento lilás pálido — quase pastel, mas com saturação suficiente
+   * pra se destacar do fundo púrpura empoeirado. */
+  --accent: #b8a6d9;
+  --accent-strong: #d3c4f0;
+  --accent-dim: #897aa5;
+  --accent-deep: #322a45;
+
+  --success: #a99bc4;
+  --locked: #2e2840;
+  --danger: #e88a99;
+
+  --accent-tint: rgba(184, 166, 217, 0.10);
+  --accent-glow: transparent;
+  --success-glow: transparent;
+  --mute-tint: rgba(106, 96, 135, 0.22);
+  --danger-border: rgba(232, 138, 153, 0.4);
+  --backdrop: rgba(26, 22, 34, 0.82);
+}
+
+/*
+ * Dune — areia/caramelo com acento azul-petróleo.
+ *
+ * Tema "expedição/papel envelhecido": fundo bege escuro (não marrom
+ * profundo como Terracotta — mais areia que terra), cards num caramelo
+ * levemente mais claro. Acento bege pálido pras letras de informação;
+ * o azul-petróleo aparece como danger (não acento) pra romper a paleta
+ * monocromática quente quando algo realmente precisa de atenção.
+ */
+[data-theme='dune'] {
+  --bg: #2a2218;
+  --bg-card: #352b1f;
+  --bg-card-hover: #3f3325;
+  --bg-elevated: #4a3b2c;
+  --bg-locked: #2f261b;
+
+  --border: #4a3d2e;
+  --border-bright: #6b5942;
+  --border-deep: #251e15;
+  --border-locked: #3d3124;
+
+  --text: #f5e9d3;
+  --text-strong: #fff5e0;
+  --text-dim: #b39e7e;
+  --text-mute: #7a6a55;
+  --text-locked: #564838;
+
+  /* Acento bege-pálido — discreto, casa com o fundo de areia. */
+  --accent: #d4b896;
+  --accent-strong: #ebd2af;
+  --accent-dim: #a3906f;
+  --accent-deep: #3d3122;
+
+  --success: #c2ad8a;
+  --locked: #3d2e1f;
+  --danger: #d97a5a;
+
+  --accent-tint: rgba(212, 184, 150, 0.10);
+  --accent-glow: transparent;
+  --success-glow: transparent;
+  --mute-tint: rgba(122, 106, 85, 0.22);
+  --danger-border: rgba(217, 122, 90, 0.45);
+  --backdrop: rgba(42, 34, 24, 0.82);
+}
+
+/*
+ * Synthwave — anos 80, neon, vapor.
+ *
+ * Fundo azul-noite muito escuro (puxa pro púrpura), cards num roxo-azul
+ * mais claro. Acento magenta vibrante (não rosa pastel — rosa elétrico).
+ * Tema mais saturado da coleção, cuidadoso pra não fadigar a vista:
+ * texto branco-lavanda, hierarquias bem definidas pra diluir o impacto
+ * do magenta.
+ */
+[data-theme='synthwave'] {
+  --bg: #0d0a1a;
+  --bg-card: #1a1530;
+  --bg-card-hover: #251c40;
+  --bg-elevated: #2c2350;
+  --bg-locked: #100c1e;
+
+  --border: #2e2350;
+  --border-bright: #4a3680;
+  --border-deep: #08061a;
+  --border-locked: #1c1530;
+
+  --text: #f0e8ff;
+  --text-strong: #ffffff;
+  --text-dim: #a89ad0;
+  --text-mute: #6e6494;
+  --text-locked: #4a4470;
+
+  /* Acento magenta elétrico — cor de neon-tube. */
+  --accent: #ff5cc8;
+  --accent-strong: #ff85d8;
+  --accent-dim: #c63f9d;
+  --accent-deep: #3a1a30;
+
+  --success: #b8a6d9;
+  --locked: #2e2350;
+  --danger: #ff5577;
+
+  --accent-tint: rgba(255, 92, 200, 0.10);
+  --accent-glow: transparent;
+  --success-glow: transparent;
+  --mute-tint: rgba(110, 100, 148, 0.22);
+  --danger-border: rgba(255, 85, 119, 0.4);
+  --backdrop: rgba(13, 10, 26, 0.82);
+}
+
+/*
+ * Mono — alto contraste tipográfico.
+ *
+ * Quase puro preto-e-branco, com um único acento amarelo-ácido
+ * (cor de marca-texto) pra elementos ativos. Atmosfera "magazine de
+ * arquitetura, brutalist, editorial". Pensado pra quem prioriza
+ * legibilidade absoluta sobre atmosfera.
+ *
+ * Detalhe importante: `--danger` aqui é PRETO sólido (não vermelho),
+ * porque a única cor "viva" da paleta é o amarelo do acento — usar
+ * vermelho quebraria a aposta visual. O contexto de perigo é
+ * comunicado pela TIPOGRAFIA (texto preto sobre fundo branco com peso),
+ * não pela cor.
+ */
+[data-theme='mono'] {
+  --bg: #fafafa;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f0f0f0;
+  --bg-elevated: #ffffff;
+  --bg-locked: #ededed;
+
+  --border: #1a1a1a;
+  --border-bright: #000000;
+  --border-deep: #d8d8d8;
+  --border-locked: #c4c4c4;
+
+  --text: #0a0a0a;
+  --text-strong: #000000;
+  --text-dim: #404040;
+  --text-mute: #707070;
+  --text-locked: #a8a8a8;
+
+  /* Acento amarelo-ácido (highlighter). Único toque vivo da paleta. */
+  --accent: #d4f000;
+  --accent-strong: #c0d800;
+  --accent-dim: #909c10;
+  --accent-deep: #2a2f00;
+
+  --success: #1a1a1a;
+  --locked: #c4c4c4;
+  --danger: #000000;
+
+  --accent-tint: rgba(212, 240, 0, 0.18);
+  --accent-glow: transparent;
+  --success-glow: transparent;
+  --mute-tint: rgba(112, 112, 112, 0.18);
+  --danger-border: rgba(0, 0, 0, 0.6);
+  --backdrop: rgba(250, 250, 250, 0.82);
+}
+
+/*
+ * Phosphor — terminal CRT verde, hacker movie sem ser literal.
+ *
+ * Fundo quase preto com micro tom esverdeado, cards um pouco mais claros
+ * (também esverdeados, não cinza neutro) — o monitor inteiro "vibra" em
+ * verde. Texto em verde-fósforo médio (não branco), acento em verde-
+ * fósforo brilhante pros valores ativos. Esse é o único tema da coleção
+ * em que o TEXTO PRINCIPAL é colorido (não cinza/branco) — é parte da
+ * identidade.
+ *
+ * Coral/laranja de perigo pra romper a mono-paleta verde quando algo
+ * realmente precisa de atenção. Sem isso, "alerta" ficaria invisível.
+ */
+[data-theme='phosphor'] {
+  --bg: #080a08;
+  --bg-card: #0d120e;
+  --bg-card-hover: #131a14;
+  --bg-elevated: #182018;
+  --bg-locked: #0a0e0a;
+
+  --border: #1c281e;
+  --border-bright: #2a3a2c;
+  --border-deep: #050805;
+  --border-locked: #141914;
+
+  /* Texto: verde-fósforo médio (não saturado a ponto de cansar a vista,
+   * mas o suficiente pra "ser CRT"). Hierarquias mais escuras pra
+   * mute/locked seguem na família verde — não voltam pra cinza. */
+  --text: #7eff9c;
+  --text-strong: #b0ffc4;
+  --text-dim: #5cc278;
+  --text-mute: #3d8a55;
+  --text-locked: #2a5a3a;
+
+  /* Acento verde-fósforo brilhante — pulsa "isto é importante". */
+  --accent: #5fff8a;
+  --accent-strong: #8fffac;
+  --accent-dim: #3fbf6a;
+  --accent-deep: #143820;
+
+  /* Success um tom abaixo do acento pra hierarquias secundárias. */
+  --success: #6fd88a;
+  --locked: #1f2e22;
+  --danger: #ff8a4a;
+
+  --accent-tint: rgba(95, 255, 138, 0.10);
+  --accent-glow: transparent;
+  --success-glow: transparent;
+  --mute-tint: rgba(61, 138, 85, 0.20);
+  --danger-border: rgba(255, 138, 74, 0.45);
+  --backdrop: rgba(8, 10, 8, 0.85);
+}
+
+/*
+ * Sepia — papel antigo, manuscrito, livro de receitas.
+ *
+ * Fundo creme/marfim quente (mais saturado que o Light clássico),
+ * cards num bege levemente mais claro pra criar separação. Texto
+ * marrom-castanha profundo (não preto puro — ficaria fora do
+ * contexto). Acento em terracota queimada pras letras importantes,
+ * danger em bordô profundo (vermelho-vinho de gravura antiga).
+ *
+ * Esse é o único tema CLARO + QUENTE da coleção — Glacier é claro
+ * frio, Mono é claro neutro. O contraste todo vem da paleta quente
+ * empilhada, não de preto-sobre-branco.
+ */
+[data-theme='sepia'] {
+  --bg: #f3ead7;
+  --bg-card: #fbf5e6;
+  --bg-card-hover: #f7eed9;
+  --bg-elevated: #ffffff;
+  --bg-locked: #ebe1cc;
+
+  --border: #d6c9aa;
+  --border-bright: #b29c75;
+  --border-deep: #e3d8be;
+  --border-locked: #ddd0b3;
+
+  /* Texto marrom-castanha — escuro o suficiente pra ler bem, quente
+   * o suficiente pra "ser sepia". Mute/locked seguem família. */
+  --text: #3a2a1c;
+  --text-strong: #1f1610;
+  --text-dim: #6b5340;
+  --text-mute: #998269;
+  --text-locked: #b8a685;
+
+  /* Acento terracota queimada — quente médio, contrasta com creme. */
+  --accent: #8c4a2b;
+  --accent-strong: #6b3520;
+  --accent-dim: #b06d4a;
+  --accent-deep: #d6c9aa;
+
+  /* Success em verde-oliva amarronzado pra não destoar da paleta. */
+  --success: #6e6533;
+  --locked: #c2b598;
+  --danger: #9c2a2a;
+
+  --accent-tint: rgba(140, 74, 43, 0.08);
+  --accent-glow: transparent;
+  --success-glow: transparent;
+  --mute-tint: rgba(153, 130, 105, 0.18);
+  --danger-border: rgba(156, 42, 42, 0.45);
+  --backdrop: rgba(243, 234, 215, 0.78);
 }

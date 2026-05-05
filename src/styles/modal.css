@@ -28,6 +28,20 @@
   animation: modal-rise 0.2s ease;
 }
 
+/*
+ * Variante do modal usada pelo seletor de tema — precisa de mais espaço
+ * horizontal pra acomodar 12 cards organizados em 2 seções, e altura
+ * ampliada pra o scroll interno ter "trilho" suficiente antes de truncar.
+ */
+.modal--theme {
+  max-width: 880px;
+  /* Limita o crescimento vertical do modal: mesmo com scroll interno,
+   * não queremos que ele encoste topo/base da viewport. */
+  max-height: calc(100vh - 96px);
+  display: flex;
+  flex-direction: column;
+}
+
 .modal-title {
   font-family: var(--font-display);
   font-size: 22px;

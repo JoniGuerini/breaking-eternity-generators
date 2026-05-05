@@ -43,13 +43,49 @@
   },
   "modal": {
     "resetTitle": "Reiniciar progresso?",
-    "resetBody": "Isso vai apagar tudo o que você acumulou e começar um novo jogo do zero. Não tem como desfazer."
+    "resetBody": "Isso vai apagar tudo o que você acumulou e começar um novo jogo do zero. Não tem como desfazer.",
+    "themeTitle": "Selecionar tema",
+    "themeBody": "Escolha a paleta visual da interface."
   },
   "theme": {
-    "switchToLight": "Mudar para tema claro",
-    "switchToDark": "Mudar para tema escuro",
-    "lightLabel": "Tema claro",
-    "darkLabel": "Tema escuro"
+    "openSelector": "Abrir seletor de tema",
+    "selectorTitle": "Selecionar tema",
+    "selectAriaLabel": "Selecionar tema {{name}}",
+    "current": "Atual",
+    "sectionClassic": "Clássicos",
+    "sectionCollection": "Coleção",
+    "names": {
+      "dark": "Escuro",
+      "light": "Claro",
+      "midnight": "Meia-noite",
+      "terracotta": "Terracota",
+      "forest": "Floresta",
+      "crimson": "Carmesim",
+      "glacier": "Geleira",
+      "carbon": "Carbono",
+      "lavender": "Lavanda",
+      "dune": "Duna",
+      "synthwave": "Synthwave",
+      "mono": "Mono",
+      "phosphor": "Fósforo",
+      "sepia": "Sépia"
+    },
+    "descriptions": {
+      "dark": "Preto neutro. Branco como acento.",
+      "light": "Off-white quente. Texto preto profundo.",
+      "midnight": "Azul-meia-noite com acento ciano.",
+      "terracotta": "Marrom terroso com acento dourado.",
+      "forest": "Verde-musgo com acento de tronco.",
+      "crimson": "Borgonha profundo com acento dourado.",
+      "glacier": "Branco gelado e azul-acinzentado.",
+      "carbon": "Preto absoluto com vermelho-sangue.",
+      "lavender": "Roxo empoeirado com lilás pálido.",
+      "dune": "Areia escura com acento caramelo.",
+      "synthwave": "Roxo neon com magenta elétrico.",
+      "mono": "Preto e branco com amarelo-ácido.",
+      "phosphor": "Terminal CRT com verde-fósforo.",
+      "sepia": "Papel antigo com terracota queimada."
+    }
   },
   "language": {
     "switchToEnglish": "Mudar para inglês",

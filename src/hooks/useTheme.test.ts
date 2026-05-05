@@ -51,8 +51,28 @@ describe('loadStoredTheme', () => {
     expect(loadStoredTheme()).toBe('dark');
   });
 
+  it.each([
+    'midnight',
+    'terracotta',
+    'forest',
+    'crimson',
+    'glacier',
+    'carbon',
+    'lavender',
+    'dune',
+    'synthwave',
+    'mono',
+    'phosphor',
+    'sepia',
+  ] as const)('retorna o tema "%s" quando salvo', (theme) => {
+    store['breaking_eternity_theme_v1'] = theme;
+    expect(loadStoredTheme()).toBe(theme);
+  });
+
   it('volta pro default quando o valor salvo é inválido', () => {
-    store['breaking_eternity_theme_v1'] = 'sepia';
+    // Valor sentinela: lixo que nunca poderá virar tema. Evita colisão
+    // com nomes futuros — qualquer string que NÃO esteja em THEMES vale.
+    store['breaking_eternity_theme_v1'] = '__invalid_theme__';
     expect(loadStoredTheme()).toBe('dark');
   });
 
