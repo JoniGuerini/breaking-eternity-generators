@@ -44,14 +44,25 @@
   grid-template-columns: 1fr auto;
   gap: 24px;
   align-items: center;
+  /*
+   * Performance: cards fora da viewport não pagam layout/paint.
+   * `contain-intrinsic-size` é o "placeholder" de tamanho que o
+   * navegador usa enquanto o card está fora — ajusta automaticamente
+   * quando ele entra em vista. Valor aproximado pro card desbloqueado;
+   * o bloqueado sobrescreve abaixo.
+   */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 168px;
 }
 
 /* Card bloqueado — outro material. Frio, neutro, sem peso visual: sinaliza
- * "fora do alcance" pelo PRÓPRIO MATERIAL, não por opacity/filtro. */
+ * "fora do alcance" pelo PRÓPRIO MATERIAL, não por opacity/filtro.
+ * Tamanho intrínseco menor que o desbloqueado pra placeholder mais preciso. */
 .generator.locked {
   background: var(--bg-locked);
   border-color: var(--border-locked);
   color: var(--text-locked);
+  contain-intrinsic-size: auto 88px;
 }
 
 /* Nome em destaque (Fraunces). Compartilhado entre os dois layouts. */

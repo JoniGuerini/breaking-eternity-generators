@@ -1,16 +1,39 @@
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getBuyCost } from '../game/config';
+import type Decimal from 'break_eternity.js';
 import { useGameStore } from '../game/store';
 import { formatInt, formatNum } from '../utils/format';
 import { toRoman } from '../utils/roman';
 import { ProgressBar } from './ProgressBar';
+
+/*
+ * Estratégia de re-render:
+ *
+ * O store muta Decimals in-place a 60Hz e dispara `notify()` (~15Hz). Sem
+ * memoização, todos os cards re-renderizam 15Hz independentemente, o que
+ * fica caro com muitos geradores na lista.
+ *
+ * Pra otimizar, separamos em dois componentes envoltos em React.memo:
+ *   - UnlockedCard: re-renderiza só quando count, purchases, ou affordable
+ *     mudam. Em estado estável (lista cheia, comprando ocasionalmente)
+ *     o card praticamente não atualiza.
+ *   - LockedCard: re-renderiza quando o ratio quantizado muda (1% steps)
+ *     ou quando o gerador finalmente desbloqueia.
+ *
+ * As props são primitivos (number, string, boolean) — comparação default
+ * do React.memo (Object.is) é suficiente, sem precisar de comparador custom.
+ *
+ * O componente externo `GeneratorCard` faz a derivação dessas props a partir
+ * do store. Ele segue dependendo de `tick` pra ser invocado, mas só os
+ * inner components passam pra DOM/diff quando algo realmente mudou.
+ */
 
 interface GeneratorCardProps {
   generatorId: number;
 }
 
 export function GeneratorCard({ generatorId }: GeneratorCardProps) {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   // Subscreve tick. O gerador em si é mutado in-place no store — buscamos
   // a referência atual a cada render, garantindo dado fresco.
   useGameStore((s) => s.tick);
@@ -19,53 +42,77 @@ export function GeneratorCard({ generatorId }: GeneratorCardProps) {
   if (!gen) return null;
 
   if (!gen.unlocked) {
+    // Quantiza o ratio em 100 passos (steps de 1%): repaints da barra
+    // ficam visualmente suaves sem disparar re-render todo tick.
+    const ratio = state.resource.div(gen.unlockThreshold).toNumber();
+    const ratioStep = Math.min(100, Math.floor(ratio * 100));
     return (
-      <div className="generator locked">
-        <div className="gen-info">
-          <div className="gen-name">{t('generator.name', { id: gen.id })}</div>
-        </div>
-        <div className="gen-action">
-          <LockedIndicator
-            unlockThreshold={formatNum(gen.unlockThreshold, i18n.language)}
-            ratio={state.resource.div(gen.unlockThreshold).toNumber()}
-          />
-        </div>
-      </div>
+      <LockedCard
+        generatorId={gen.id}
+        unlockThresholdLabel={formatNum(gen.unlockThreshold, i18n.language)}
+        ratioStep={ratioStep}
+      />
     );
   }
 
-  return <UnlockedCard generatorId={gen.id} />;
+  const cost = computeCost(gen.baseCost, gen.costMultiplier, gen.purchases);
+  const affordable = state.resource.gte(cost);
+  const totalRate = gen.count.mul(gen.productionRate);
+
+  return (
+    <UnlockedCard
+      generatorId={gen.id}
+      countLabel={formatInt(gen.count, i18n.language)}
+      hasCount={gen.count.gt(0)}
+      totalRateLabel={formatNum(totalRate, i18n.language)}
+      costLabel={formatNum(cost, i18n.language)}
+      affordable={affordable}
+    />
+  );
 }
 
-function UnlockedCard({ generatorId }: { generatorId: number }) {
-  const { t, i18n } = useTranslation();
-  const state = useGameStore.getState();
-  const gen = state.generators[generatorId - 1];
-  const buy = useGameStore((s) => s.buy);
-  if (!gen) return null;
+/** Helper local pra evitar importar getBuyCost (cada call alocaria Decimals). */
+function computeCost(baseCost: Decimal, multiplier: Decimal, purchases: number): Decimal {
+  return baseCost.mul(multiplier.pow(purchases));
+}
 
-  const cost = getBuyCost(gen);
-  const affordable = state.resource.gte(cost);
-  // Target da produção: Gen1 produz o recurso base; demais produzem o gerador
-  // anterior. Tradução é interpolada via i18n.
+/* ---------- UnlockedCard ---------- */
+
+interface UnlockedCardProps {
+  generatorId: number;
+  countLabel: string;
+  hasCount: boolean;
+  totalRateLabel: string;
+  costLabel: string;
+  affordable: boolean;
+}
+
+const UnlockedCard = memo(function UnlockedCard({
+  generatorId,
+  countLabel,
+  hasCount,
+  totalRateLabel,
+  costLabel,
+  affordable,
+}: UnlockedCardProps) {
+  const { t } = useTranslation();
+  const buy = useGameStore((s) => s.buy);
   const target =
-    gen.id === 1
+    generatorId === 1
       ? t('resource.label')
-      : t('generator.name', { id: gen.id - 1 });
-  const totalRate = gen.count.mul(gen.productionRate);
-  const hasCount = gen.count.gt(0);
+      : t('generator.name', { id: generatorId - 1 });
 
   return (
     <div className={`generator${hasCount ? ' has-count' : ''}`}>
       <div className="gen-card">
         <div className="gen-card__head">
-          <div className="gen-name">{t('generator.name', { id: gen.id })}</div>
+          <div className="gen-name">{t('generator.name', { id: generatorId })}</div>
           {/* Bloco da quantidade: VALOR em cima, label embaixo.
               `--reversed` usa column-reverse, então o ÚLTIMO filho do DOM
               fica no topo visualmente. Por isso a label vem antes no JSX. */}
           <div className="gen-card__stack gen-card__stack--reversed gen-card__stack--right">
             <span className="label">{t('generator.owned')}</span>
-            <span className="value">{formatInt(gen.count, i18n.language)}</span>
+            <span className="value">{countLabel}</span>
           </div>
         </div>
 
@@ -76,7 +123,7 @@ function UnlockedCard({ generatorId }: { generatorId: number }) {
           <div className="gen-card__stack">
             <span className="label">{t('generator.produces')}</span>
             <span className="value">
-              {formatNum(totalRate, i18n.language)}
+              {totalRateLabel}
               {t('resource.rateSuffix')}{' '}
               <span className="target">· {target}</span>
             </span>
@@ -84,7 +131,7 @@ function UnlockedCard({ generatorId }: { generatorId: number }) {
           {/* Direita: TIER em cima, numeral romano embaixo */}
           <div className="gen-card__stack gen-card__stack--right">
             <span className="label">{t('generator.tier')}</span>
-            <span className="value">{toRoman(gen.id)}</span>
+            <span className="value">{toRoman(generatorId)}</span>
           </div>
         </div>
 
@@ -97,27 +144,40 @@ function UnlockedCard({ generatorId }: { generatorId: number }) {
           onClick={() => buy(generatorId)}
         >
           <span>{affordable ? t('actions.buy') : t('actions.insufficientResource')}</span>
-          <span className={`gen-cost${affordable ? ' affordable' : ''}`}>
-            {formatNum(cost, i18n.language)}
-          </span>
+          <span className={`gen-cost${affordable ? ' affordable' : ''}`}>{costLabel}</span>
         </button>
       </div>
     </div>
   );
+});
+
+/* ---------- LockedCard ---------- */
+
+interface LockedCardProps {
+  generatorId: number;
+  unlockThresholdLabel: string;
+  /** Ratio quantizado em [0, 100] — steps de 1%. */
+  ratioStep: number;
 }
 
-interface LockedIndicatorProps {
-  unlockThreshold: string;
-  ratio: number;
-}
-
-function LockedIndicator({ unlockThreshold, ratio }: LockedIndicatorProps) {
+const LockedCard = memo(function LockedCard({
+  generatorId,
+  unlockThresholdLabel,
+  ratioStep,
+}: LockedCardProps) {
   const { t } = useTranslation();
   return (
-    <div className="gen-pending">
-      <span className="gen-pending-label">{t('generator.unlocksWith')}</span>
-      <span className="gen-pending-value">{unlockThreshold}</span>
-      <ProgressBar ratio={ratio} />
+    <div className="generator locked">
+      <div className="gen-info">
+        <div className="gen-name">{t('generator.name', { id: generatorId })}</div>
+      </div>
+      <div className="gen-action">
+        <div className="gen-pending">
+          <span className="gen-pending-label">{t('generator.unlocksWith')}</span>
+          <span className="gen-pending-value">{unlockThresholdLabel}</span>
+          <ProgressBar ratio={ratioStep / 100} />
+        </div>
+      </div>
     </div>
   );
-}
+});
