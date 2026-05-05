@@ -30,6 +30,7 @@ export type HistoryEventKind =
   | 'generator_bought'
   | 'upgrade_bought'
   | 'generator_unlocked'
+  | 'milestone_claimed'
   | 'offline_gain'
   | 'save_start';
 
@@ -66,6 +67,18 @@ export interface GeneratorUnlockedEvent extends HistoryEventBase {
   genId: number;
 }
 
+/**
+ * Marco cruzado: o gerador `genId` atingiu um (ou mais, após agregação) tier
+ * de marco — concedendo +1 PM por tier. `fromTier` é o último tier antes do
+ * burst (tipicamente o evento agrega vários no mesmo segundo).
+ */
+export interface MilestoneClaimedEvent extends HistoryEventBase {
+  kind: 'milestone_claimed';
+  genId: number;
+  fromTier: number;
+  toTier: number;
+}
+
 export interface OfflineGainEvent extends HistoryEventBase {
   kind: 'offline_gain';
   /** Segundos de offline (wall clock). */
@@ -91,6 +104,7 @@ export type HistoryEvent =
   | GeneratorBoughtEvent
   | UpgradeBoughtEvent
   | GeneratorUnlockedEvent
+  | MilestoneClaimedEvent
   | OfflineGainEvent
   | SaveStartEvent;
 
@@ -206,8 +220,23 @@ function tryMergeWithLast(incoming: HistoryEvent): HistoryEvent | null {
     };
   }
 
-  // Outros tipos (unlocked, reset, offline_gain) nunca mesclam — cada
-  // um é uma ocorrência discreta digna de uma linha própria.
+  if (last.kind === 'milestone_claimed' && incoming.kind === 'milestone_claimed') {
+    // Agrega marcos consecutivos do mesmo gerador (ex.: catch-up offline
+    // cruzou tier 4 e 5 num único tick). Agregamos só se forem contíguos:
+    // last.toTier + 1 === incoming.fromTier + 1, isto é, incoming continua
+    // a sequência. Caso contrário (tiers não-contíguos por algum motivo)
+    // é mais honesto manter linhas separadas.
+    if (last.genId !== incoming.genId) return null;
+    if (incoming.fromTier !== last.toTier) return null;
+    return {
+      ...last,
+      toTier: incoming.toTier,
+      ts: incoming.ts,
+    };
+  }
+
+  // Outros tipos (unlocked, offline_gain, save_start) nunca mesclam —
+  // cada um é uma ocorrência discreta digna de uma linha própria.
   return null;
 }
 
@@ -268,6 +297,23 @@ export function recordGeneratorUnlocked(genId: number): void {
   });
 }
 
+/**
+ * Registra que o gerador `genId` cruzou o tier de marco `tier` (recebeu +1 PM).
+ * Chamado pelo store após `collectAndClaimMilestones`. Eventos contíguos
+ * (mesmo gen, próximo tier, dentro da janela) são agregados em uma só linha
+ * "Gen N atingiu marcos X-Y".
+ */
+export function recordMilestoneClaimed(genId: number, tier: number): void {
+  append({
+    id: makeId(),
+    ts: Date.now(),
+    kind: 'milestone_claimed',
+    genId,
+    fromTier: tier - 1,
+    toTier: tier,
+  });
+}
+
 export function recordOfflineGain(elapsedSeconds: number, resourceGained: Decimal): void {
   append({
     id: makeId(),
@@ -318,6 +364,7 @@ export function loadHistory(raw: unknown): void {
       case 'generator_bought':
       case 'upgrade_bought':
       case 'generator_unlocked':
+      case 'milestone_claimed':
       case 'offline_gain':
       case 'save_start':
         valid.push(item as HistoryEvent);

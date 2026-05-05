@@ -32,7 +32,7 @@ export function UpgradesModal({ open, onClose }: UpgradesModalProps) {
   // antes de qualquer trabalho.
   useGameStore((s) => s.tick);
   const state = useGameStore.getState();
-  const { generators, resource, upgrades } = state;
+  const { generators, upgradePoints, upgrades } = state;
   const unlockedGens = generators.filter((g) => g.unlocked);
 
   useEffect(() => {
@@ -69,6 +69,11 @@ export function UpgradesModal({ open, onClose }: UpgradesModalProps) {
             <p className="upgrades-modal__subtitle">
               {t('upgrades.modalBody')}
             </p>
+            <p className="upgrades-modal__balance">
+              {t('upgrades.available', {
+                amount: formatNum(upgradePoints, i18n.language),
+              })}
+            </p>
           </div>
           <button
             type="button"
@@ -88,13 +93,15 @@ export function UpgradesModal({ open, onClose }: UpgradesModalProps) {
               {unlockedGens.map((gen) => {
                 const level = upgrades.directedLevels[gen.id] ?? 0;
                 const cost = getDirectedUpgradeCost(gen.id, level);
-                const affordable = resource.gte(cost);
+                const affordable = upgradePoints.gte(cost);
                 return (
                   <DirectedUpgradeCard
                     key={gen.id}
                     generatorId={gen.id}
                     level={level}
-                    costLabel={formatNum(cost, i18n.language)}
+                    costLabel={t('upgrades.directed.costPm', {
+                      amount: formatNum(cost, i18n.language),
+                    })}
                     affordable={affordable}
                   />
                 );

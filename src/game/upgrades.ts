@@ -1,5 +1,5 @@
 import Decimal from 'break_eternity.js';
-import { D, getGenConfig } from './config';
+import { D } from './config';
 import type { UpgradeState } from './types';
 
 /**
@@ -9,10 +9,13 @@ import type { UpgradeState } from './types';
  * Atualmente o jogo expõe APENAS uma classe de melhorias:
  *   DIRECTED — boost infinito do rate de um Gen específico.
  *
+ * Custo é pago em PONTOS DE MELHORIA (PM), recurso ganho via marcos
+ * (ver `milestones.ts`). Recurso Base não entra mais na compra de
+ * melhorias — é exclusivamente pra geradores.
+ *
  * Tudo aqui é PURO — nenhuma referência ao store. Funções recebem o
  * estado relevante e devolvem números/Decimals. Isso facilita testar
- * isoladamente e usar tanto na simulação quanto na UI (custos previstos,
- * efeitos previstos, etc.).
+ * isoladamente e usar tanto na simulação quanto na UI.
  */
 
 /* ─────────── DIRECTED ─────────── */
@@ -25,29 +28,57 @@ import type { UpgradeState } from './types';
 export const DIRECTED_RATE_MULT_PER_LEVEL = D(2);
 
 /**
- * Fator de crescimento do custo a cada nível comprado.
+ * Custo (em PM) do PRÓXIMO nível do boost direcionado do Gen `n`, dado
+ * quantos níveis já foram comprados.
  *
- * Triplica a cada compra — cresce mais rápido que o custo de comprar
- * geradores (que cresce em 1.55-2.10×). Isso garante que ficar
- * spammando o boost vira custo proibitivo, e o jogador volta a comprar
- * geradores em algum momento.
+ * Fórmula: `cost(L) = (L+1)!`
+ *
+ * Tabela:
+ *   L=0 → nível 1: 1 PM
+ *   L=1 → nível 2: 2 PM
+ *   L=2 → nível 3: 6 PM
+ *   L=3 → nível 4: 24 PM
+ *   L=4 → nível 5: 120 PM
+ *   L=5 → nível 6: 720 PM
+ *   L=6 → nível 7: 5.040 PM
+ *   ...
+ *
+ * O custo NÃO depende do gerador — cada gerador tem sua própria trilha
+ * de níveis, e a fórmula é aplicada por trilha. Comprar a melhoria 3 do
+ * Gen 1 não barateia nem encarece a do Gen 2.
+ *
+ * Crescimento factorial é mais agressivo que potência (×3 a cada nível
+ * antes era 1, 5, 15, 45...) — aqui o "preço de oportunidade" cresce
+ * rapidamente, forçando o jogador a balancear entre upgrades cedo e
+ * acumular PMs pra um upgrade mais alto depois.
  */
-export const DIRECTED_COST_GROWTH = D(3);
+export function getDirectedUpgradeCost(_genId: number, currentLevel: number): Decimal {
+  return factorial(currentLevel + 1);
+}
 
 /**
- * Custo do PRÓXIMO nível do boost direcionado do Gen `n`, dado quantos
- * níveis já foram comprados.
+ * Factorial via produto iterativo, retornado como Decimal pra que tiers
+ * altos (ex.: 170+) não estourem float64.
  *
- * Fórmula:
- *   cost(n, L) = baseCost(n) * 5 * 3^L
- *
- * - Multiplicado por 5 do baseCost: o primeiro nível custa "5 unidades
- *   daquele Gen" — caro o suficiente pra ser uma decisão (não compra
- *   automaticamente), barato o suficiente pra ser tentador.
+ * Memo simples (cap 200): factorials são acessados muito (uma chamada
+ * por render no UpgradesModal × N geradores). Acima de 200 calculamos
+ * direto sem cache — é raro e o produto é cheap.
  */
-export function getDirectedUpgradeCost(genId: number, currentLevel: number): Decimal {
-  const cfg = getGenConfig(genId);
-  return cfg.baseCost.mul(5).mul(DIRECTED_COST_GROWTH.pow(currentLevel));
+const FACTORIAL_CACHE_CAP = 200;
+const factorialCache: Decimal[] = [D(1)]; // 0! = 1
+
+function factorial(n: number): Decimal {
+  if (n <= 0) return D(1);
+  if (n <= FACTORIAL_CACHE_CAP && factorialCache[n]) return factorialCache[n];
+
+  let i = factorialCache.length;
+  let acc = factorialCache[i - 1];
+  while (i <= n) {
+    acc = acc.mul(i);
+    if (i <= FACTORIAL_CACHE_CAP) factorialCache[i] = acc;
+    i++;
+  }
+  return acc;
 }
 
 /**

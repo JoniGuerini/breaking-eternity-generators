@@ -1,9 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import Decimal from 'break_eternity.js';
 import type { HistoryEvent } from '../game/history';
 import { useHistory } from '../hooks/useHistory';
 import { formatNum } from '../utils/format';
 import { formatPlaytime } from '../utils/playtime';
+
+/** Threshold (10^tier) como Decimal — usado pra renderizar marcos no log. */
+function thresholdValue(tier: number): Decimal {
+  return new Decimal(10).pow(tier);
+}
 
 interface HistoryModalProps {
   open: boolean;
@@ -18,7 +24,7 @@ interface HistoryModalProps {
  * porque ações diferentes do jogador, mesmo que ambas sejam "comprar
  * algo", merecem leitura separada.
  */
-type Filter = 'all' | 'purchases' | 'upgrades' | 'unlocks' | 'system';
+type Filter = 'all' | 'purchases' | 'upgrades' | 'milestones' | 'unlocks' | 'system';
 
 /**
  * Modal de histórico — full-screen, mesma variante visual do modal de
@@ -135,6 +141,7 @@ export function HistoryModal({ open, onClose }: HistoryModalProps) {
           <FilterChip current={filter} value="all" onSelect={setFilter} label={t('history.filters.all')} />
           <FilterChip current={filter} value="purchases" onSelect={setFilter} label={t('history.filters.purchases')} />
           <FilterChip current={filter} value="upgrades" onSelect={setFilter} label={t('history.filters.upgrades')} />
+          <FilterChip current={filter} value="milestones" onSelect={setFilter} label={t('history.filters.milestones')} />
           <FilterChip current={filter} value="unlocks" onSelect={setFilter} label={t('history.filters.unlocks')} />
           <FilterChip current={filter} value="system" onSelect={setFilter} label={t('history.filters.system')} />
         </div>
@@ -166,6 +173,8 @@ function matchesFilter(ev: HistoryEvent, filter: Filter): boolean {
       return ev.kind === 'generator_bought';
     case 'upgrades':
       return ev.kind === 'upgrade_bought';
+    case 'milestones':
+      return ev.kind === 'milestone_claimed';
     case 'unlocks':
       return ev.kind === 'generator_unlocked';
     case 'system':
@@ -265,9 +274,10 @@ function describeEvent(
               gen: genName,
               level: ev.toLevel,
             });
+      // Custo agora é em PM, não Recurso Base — usa a chave `spentPm`.
       return {
         title,
-        detail: t('history.events.spent', {
+        detail: t('history.events.spentPm', {
           amount: formatNum(ev.totalCost, locale),
         }),
       };
@@ -277,6 +287,26 @@ function describeEvent(
       return {
         title: t('history.events.generatorUnlocked', { gen: genName }),
         detail: null,
+      };
+    }
+    case 'milestone_claimed': {
+      const genName = t('generator.name', { id: ev.genId });
+      const tiers = ev.toTier - ev.fromTier;
+      // 1 tier → "Gen N atingiu 100"; >1 → "Gen N atingiu marcos 2-4"
+      const title =
+        tiers > 1
+          ? t('history.events.milestoneClaimedMany', {
+              gen: genName,
+              from: ev.fromTier + 1,
+              to: ev.toTier,
+            })
+          : t('history.events.milestoneClaimedOne', {
+              gen: genName,
+              threshold: formatNum(thresholdValue(ev.toTier), locale),
+            });
+      return {
+        title,
+        detail: t('history.events.milestoneReward', { count: tiers }),
       };
     }
     case 'offline_gain': {

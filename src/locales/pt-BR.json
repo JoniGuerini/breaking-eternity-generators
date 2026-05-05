@@ -16,24 +16,32 @@
     "label": "Recurso Base",
     "rateSuffix": "/s"
   },
+  "upgradePoints": {
+    "label": "Pontos de Melhoria",
+    "short": "PM",
+    "ariaLabel": "Pontos de Melhoria disponíveis"
+  },
   "generator": {
     "name": "Gerador {{id}}",
     "owned": "Possuídos",
     "produces": "Produz",
     "tier": "Tier",
-    "unlocksWith": "Desbloqueia com"
+    "unlocksWith": "Desbloqueia com",
+    "nextMilestone": "Próximo marco: {{threshold}}"
   },
   "upgrades": {
     "open": "Melhorias",
     "openAriaLabel": "Abrir melhorias",
     "closeAriaLabel": "Fechar melhorias",
     "modalTitle": "Melhorias",
-    "modalBody": "Boosts permanentes para cada gerador. Cada nível dobra a produção do gerador escolhido. Custo triplica a cada compra.",
+    "modalBody": "Boosts permanentes para cada gerador. Cada nível dobra a produção. Custo em PM cresce em fatorial: 1, 2, 6, 24, 120, 720…",
     "empty": "Desbloqueie um gerador para começar a comprar melhorias.",
+    "available": "{{amount}} PM disponíveis",
     "directed": {
       "title": "Boost · {{gen}}",
       "level": "Nível {{level}}",
-      "effect": "Cada nível dobra a produção deste gerador."
+      "effect": "Cada nível dobra a produção deste gerador.",
+      "costPm": "{{amount}} PM"
     }
   },
   "history": {
@@ -48,6 +56,7 @@
       "all": "Tudo",
       "purchases": "Compras",
       "upgrades": "Melhorias",
+      "milestones": "Marcos",
       "unlocks": "Desbloqueios",
       "system": "Sistema"
     },
@@ -57,9 +66,13 @@
       "upgradeBoughtOne": "Melhoria de {{gen}} subiu para nível {{level}}",
       "upgradeBoughtMany": "Melhoria de {{gen}} subiu ×{{count}} (nível {{level}})",
       "generatorUnlocked": "{{gen}} desbloqueado",
+      "milestoneClaimedOne": "{{gen}} atingiu {{threshold}}",
+      "milestoneClaimedMany": "{{gen}} atingiu marcos {{from}}–{{to}}",
+      "milestoneReward": "+{{count}} PM",
       "offlineGain": "Progresso offline ({{duration}})",
       "gained": "+{{amount}}",
       "spent": "−{{amount}}",
+      "spentPm": "−{{amount}} PM",
       "saveStartFresh": "Início da partida",
       "saveStartReset": "Início da partida (após reiniciar)"
     },

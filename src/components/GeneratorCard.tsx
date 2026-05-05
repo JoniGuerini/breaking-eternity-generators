@@ -1,6 +1,7 @@
 import { memo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import type Decimal from 'break_eternity.js';
+import { nextThreshold, progressRatio } from '../game/milestones';
 import { getEffectiveProductionRate, useGameStore } from '../game/store';
 import { useHoldToRepeat } from '../hooks/useHoldToRepeat';
 import { formatInt, formatNum } from '../utils/format';
@@ -64,6 +65,15 @@ export function GeneratorCard({ generatorId }: GeneratorCardProps) {
   const effectiveRate = getEffectiveProductionRate(gen, state.upgrades);
   const totalRate = gen.count.mul(effectiveRate);
 
+  // Progresso pro próximo marco (count → próxima potência de 10).
+  // Usa o claimedTier do save como ancora; quantizar em 1% mantém a memo
+  // do UnlockedCard barata (steps discretos de 100 valores possíveis).
+  // Próximo marco é SEMPRE potência de 10 inteira (10, 100, 1000, ...) —
+  // por isso `formatInt` em vez de `formatNum` (evita "10.0" no label).
+  const claimedTier = state.claimedMilestoneTiers[gen.id] ?? 0;
+  const milestoneStep = Math.min(100, Math.floor(progressRatio(gen.count, claimedTier) * 100));
+  const nextMilestoneLabel = formatInt(nextThreshold(claimedTier), i18n.language);
+
   return (
     <UnlockedCard
       generatorId={gen.id}
@@ -72,6 +82,8 @@ export function GeneratorCard({ generatorId }: GeneratorCardProps) {
       totalRateLabel={formatNum(totalRate, i18n.language)}
       costLabel={formatNum(cost, i18n.language)}
       affordable={affordable}
+      milestoneStep={milestoneStep}
+      nextMilestoneLabel={nextMilestoneLabel}
     />
   );
 }
@@ -90,6 +102,10 @@ interface UnlockedCardProps {
   totalRateLabel: string;
   costLabel: string;
   affordable: boolean;
+  /** Progresso pro próximo marco em [0, 100] (quantizado em 1%). */
+  milestoneStep: number;
+  /** Label formatado do threshold do próximo marco (ex.: "100", "1.000"). */
+  nextMilestoneLabel: string;
 }
 
 const UnlockedCard = memo(function UnlockedCard({
@@ -99,6 +115,8 @@ const UnlockedCard = memo(function UnlockedCard({
   totalRateLabel,
   costLabel,
   affordable,
+  milestoneStep,
+  nextMilestoneLabel,
 }: UnlockedCardProps) {
   const { t } = useTranslation();
   const buy = useGameStore((s) => s.buy);
@@ -125,6 +143,18 @@ const UnlockedCard = memo(function UnlockedCard({
             <span className="label">{t('generator.owned')}</span>
             <span className="value">{countLabel}</span>
           </div>
+        </div>
+
+        {/* Barra de progresso pro próximo marco (potência de 10). Cada marco
+            cruzado concede 1 PM. Sempre presente — mesmo no Gen recém-
+            -comprado, mostra a primeira meta (10 unidades). */}
+        <div className="gen-card__milestone">
+          <div className="gen-card__milestone-row">
+            <span className="label">
+              {t('generator.nextMilestone', { threshold: nextMilestoneLabel })}
+            </span>
+          </div>
+          <ProgressBar ratio={milestoneStep / 100} />
         </div>
 
         <hr className="gen-card__sep" />

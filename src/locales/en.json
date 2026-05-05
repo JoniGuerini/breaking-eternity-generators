@@ -16,24 +16,32 @@
     "label": "Base Resource",
     "rateSuffix": "/s"
   },
+  "upgradePoints": {
+    "label": "Upgrade Points",
+    "short": "UP",
+    "ariaLabel": "Upgrade Points available"
+  },
   "generator": {
     "name": "Generator {{id}}",
     "owned": "Owned",
     "produces": "Produces",
     "tier": "Tier",
-    "unlocksWith": "Unlocks at"
+    "unlocksWith": "Unlocks at",
+    "nextMilestone": "Next milestone: {{threshold}}"
   },
   "upgrades": {
     "open": "Upgrades",
     "openAriaLabel": "Open upgrades",
     "closeAriaLabel": "Close upgrades",
     "modalTitle": "Upgrades",
-    "modalBody": "Permanent boosts for each generator. Every level doubles the production of the chosen generator. Cost triples per purchase.",
+    "modalBody": "Permanent boosts for each generator. Every level doubles production. UP cost grows factorial: 1, 2, 6, 24, 120, 720…",
     "empty": "Unlock a generator to start buying upgrades.",
+    "available": "{{amount}} UP available",
     "directed": {
       "title": "Boost · {{gen}}",
       "level": "Level {{level}}",
-      "effect": "Each level doubles this generator's production."
+      "effect": "Each level doubles this generator's production.",
+      "costPm": "{{amount}} UP"
     }
   },
   "history": {
@@ -48,6 +56,7 @@
       "all": "All",
       "purchases": "Purchases",
       "upgrades": "Upgrades",
+      "milestones": "Milestones",
       "unlocks": "Unlocks",
       "system": "System"
     },
@@ -57,9 +66,13 @@
       "upgradeBoughtOne": "{{gen}} upgrade reached level {{level}}",
       "upgradeBoughtMany": "{{gen}} upgrade leveled ×{{count}} (level {{level}})",
       "generatorUnlocked": "{{gen}} unlocked",
+      "milestoneClaimedOne": "{{gen}} reached {{threshold}}",
+      "milestoneClaimedMany": "{{gen}} reached milestones {{from}}–{{to}}",
+      "milestoneReward": "+{{count}} UP",
       "offlineGain": "Offline progress ({{duration}})",
       "gained": "+{{amount}}",
       "spent": "−{{amount}}",
+      "spentPm": "−{{amount}} UP",
       "saveStartFresh": "Run started",
       "saveStartReset": "Run started (after reset)"
     },

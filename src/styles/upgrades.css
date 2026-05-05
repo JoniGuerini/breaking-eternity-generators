@@ -38,6 +38,19 @@
 }
 
 /*
+ * Linha que mostra o saldo de Pontos de Melhoria do jogador. Aparece
+ * logo abaixo do subtítulo. Mono + cor de acento pra ter peso visual
+ * sem virar um chip ostensivo.
+ */
+.upgrades-modal__balance {
+  margin: 10px 0 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--accent-strong);
+  letter-spacing: 0.02em;
+}
+
+/*
  * Botão "×" estilo discreto. Hit area generosa (32×32) sem visual
  * destacado — é uma alternativa ao ESC, não a ação principal.
  */

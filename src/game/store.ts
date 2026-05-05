@@ -5,10 +5,12 @@ import {
   clearHistory,
   recordGeneratorBought,
   recordGeneratorUnlocked,
+  recordMilestoneClaimed,
   recordOfflineGain,
   recordSaveStart,
   recordUpgradeBought,
 } from './history';
+import { collectAndClaimMilestones } from './milestones';
 import { clearSave, loadWithMeta, makeFreshState, persist } from './persistence';
 import type { GameState, Generator, UpgradeState } from './types';
 import { getDirectedUpgradeCost, getEffectiveRateMultiplier } from './upgrades';
@@ -69,7 +71,7 @@ export function getEffectiveProductionRate(gen: Generator, upgrades: UpgradeStat
 }
 
 function applyProductionTickMutating(
-  state: { resource: Decimal; generators: Generator[]; upgrades: UpgradeState },
+  state: GameState,
   dt: number,
 ) {
   const clampedDt = Math.min(DT_CAP, Math.max(0, dt));
@@ -95,6 +97,27 @@ function applyProductionTickMutating(
   }
 
   checkUnlocksMutating(state);
+  claimMilestonesMutating(state);
+}
+
+/**
+ * Concede PMs por marcos cruzados desde a última verificação. Chamada após
+ * cada tick de produção e após cada compra manual (count também sobe na
+ * compra, então um marco pode ser fechado fora do tick natural).
+ *
+ * Cada novo tier vira:
+ *   - +1 PM em `state.upgradePoints`
+ *   - 1 evento `milestone_claimed` no histórico
+ *
+ * Idempotente: se nenhum tier novo cruzou, retorna em silêncio.
+ */
+function claimMilestonesMutating(state: GameState) {
+  const events = collectAndClaimMilestones(state.generators, state.claimedMilestoneTiers);
+  if (events.length === 0) return;
+  state.upgradePoints = state.upgradePoints.add(events.length);
+  for (const ev of events) {
+    recordMilestoneClaimed(ev.genId, ev.tier);
+  }
 }
 
 function applyOfflineProgressMutating(state: GameState, elapsedSeconds: number) {
@@ -154,6 +177,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   generators: initial.generators,
   startedAt: initial.startedAt,
   upgrades: initial.upgrades,
+  upgradePoints: initial.upgradePoints,
+  claimedMilestoneTiers: initial.claimedMilestoneTiers,
   tick: 0,
 
   applyTick(dt: number) {
@@ -173,9 +198,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
     gen.purchases += 1;
 
     // Histórico ANTES de checkUnlocks: a ordem cronológica fica natural
-    // (compra → eventual desbloqueio do próximo gerador).
+    // (compra → eventual desbloqueio do próximo gerador → marco cruzado).
     recordGeneratorBought(generatorId, cost);
     checkUnlocksMutating(state);
+    claimMilestonesMutating(state);
     get().notify();
   },
 
@@ -186,9 +212,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     const currentLevel = state.upgrades.directedLevels[generatorId] ?? 0;
     const cost = getDirectedUpgradeCost(generatorId, currentLevel);
-    if (!state.resource.gte(cost)) return;
+    // Pago em PONTOS DE MELHORIA, não em Recurso Base.
+    if (!state.upgradePoints.gte(cost)) return;
 
-    state.resource = state.resource.sub(cost);
+    state.upgradePoints = state.upgradePoints.sub(cost);
     state.upgrades.directedLevels[generatorId] = currentLevel + 1;
 
     recordUpgradeBought(generatorId, currentLevel, cost);
@@ -208,6 +235,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       generators: fresh.generators,
       startedAt: fresh.startedAt,
       upgrades: fresh.upgrades,
+      upgradePoints: fresh.upgradePoints,
+      claimedMilestoneTiers: fresh.claimedMilestoneTiers,
       tick: get().tick + 1,
     });
   },
@@ -242,6 +271,8 @@ export function getStateSnapshot(): GameState {
     generators: s.generators,
     startedAt: s.startedAt,
     upgrades: s.upgrades,
+    upgradePoints: s.upgradePoints,
+    claimedMilestoneTiers: s.claimedMilestoneTiers,
   };
 }
 

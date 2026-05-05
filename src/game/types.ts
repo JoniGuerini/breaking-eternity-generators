@@ -1,4 +1,5 @@
 import type Decimal from 'break_eternity.js';
+import type { ClaimedMilestoneTiers } from './milestones';
 
 /**
  * Configuração derivada de um gerador (fórmulas, não estado).
@@ -30,6 +31,17 @@ export interface GameState {
   startedAt: number;
   /** Estado de upgrades do jogador. Ver UpgradeState. */
   upgrades: UpgradeState;
+  /**
+   * Pontos de Melhoria — moeda usada exclusivamente pra comprar upgrades
+   * direcionados. Ganhos via marcos (ver `milestones.ts`).
+   */
+  upgradePoints: Decimal;
+  /**
+   * Maior tier de marco já reivindicado por gerador. Ausência === 0.
+   * Mantido aqui (e não em `UpgradeState`) porque é estado do PROGRESSO
+   * do jogador, não escolhas de melhoria.
+   */
+  claimedMilestoneTiers: ClaimedMilestoneTiers;
 }
 
 /* ─────────── Upgrades ─────────── */
@@ -80,4 +92,12 @@ export interface SaveData {
    * types.ts; o módulo history valida a forma item-a-item ao carregar.
    */
   history?: unknown[];
+  /**
+   * Opcional pra retro-compat com saves anteriores ao sistema de marcos.
+   * Quando ausente, o load reivindica marcos retroativamente a partir do
+   * `count` atual de cada gerador (jogador não perde PMs já merecidos).
+   */
+  upgradePoints?: string;
+  /** Opcional pra retro-compat com saves pré-marcos (ver acima). */
+  claimedMilestoneTiers?: ClaimedMilestoneTiers;
 }

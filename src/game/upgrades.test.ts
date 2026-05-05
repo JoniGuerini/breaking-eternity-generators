@@ -11,11 +11,13 @@ import {
  * Testes do sistema de upgrades. Foco nas fórmulas de custo, efeito e
  * combinação multiplicativa — onde os bugs costumam aparecer.
  *
- * Hoje só existe a classe DIRECTED; testes de globais/marcos foram
- * removidos junto com a feature.
+ * Custo agora é em PONTOS DE MELHORIA (PM) e segue factorial:
+ *   cost(L) = (L+1)!  (1, 2, 6, 24, 120, 720, 5040, ...)
+ * Independente do gerador (cada gerador tem sua trilha mas a fórmula
+ * só depende do nível atual da própria trilha).
  */
 
-describe('upgrades / directed', () => {
+describe('upgrades / directed effect', () => {
   it('nível 0 é multiplicador neutro (1.0)', () => {
     expect(getDirectedRateMultiplier(0).toNumber()).toBe(1);
   });
@@ -25,26 +27,33 @@ describe('upgrades / directed', () => {
     expect(getDirectedRateMultiplier(3).toNumber()).toBeCloseTo(8, 5);
     expect(getDirectedRateMultiplier(10).toNumber()).toBeCloseTo(1024, 1);
   });
+});
 
-  it('custo do nível 0 é baseCost(N) × 5', () => {
-    // baseCost(1) = 1 → custo do primeiro nível = 5.
-    const cost = getDirectedUpgradeCost(1, 0);
-    expect(cost.toNumber()).toBe(5);
+describe('upgrades / directed cost (PM, factorial)', () => {
+  it('primeiro nível custa 1 PM', () => {
+    expect(getDirectedUpgradeCost(1, 0).toNumber()).toBe(1);
   });
 
-  it('custo triplica a cada nível comprado', () => {
-    // baseCost(1) × 5 × 3^L. `toBeCloseTo` porque Decimal.pow internamente
-    // usa log/exp e introduz ruído de ponto flutuante mesmo em expoentes
-    // inteiros (ex.: 3^5 vira 243.0000...x).
-    expect(getDirectedUpgradeCost(1, 1).toNumber()).toBeCloseTo(15, 5);
-    expect(getDirectedUpgradeCost(1, 2).toNumber()).toBeCloseTo(45, 5);
-    expect(getDirectedUpgradeCost(1, 5).toNumber()).toBeCloseTo(1215, 4);
+  it('escada factorial: 1, 2, 6, 24, 120, 720', () => {
+    expect(getDirectedUpgradeCost(1, 0).toNumber()).toBe(1);
+    expect(getDirectedUpgradeCost(1, 1).toNumber()).toBe(2);
+    expect(getDirectedUpgradeCost(1, 2).toNumber()).toBe(6);
+    expect(getDirectedUpgradeCost(1, 3).toNumber()).toBe(24);
+    expect(getDirectedUpgradeCost(1, 4).toNumber()).toBe(120);
+    expect(getDirectedUpgradeCost(1, 5).toNumber()).toBe(720);
   });
 
-  it('custo escala com baseCost do gerador', () => {
-    // baseCost(2) ≈ 19.95 → custo nível 0 ≈ 99.76
-    const cost = getDirectedUpgradeCost(2, 0);
-    expect(cost.toNumber()).toBeCloseTo(99.76, 1);
+  it('é IDÊNTICO entre geradores diferentes (custo só depende do nível)', () => {
+    expect(getDirectedUpgradeCost(1, 3).eq(getDirectedUpgradeCost(2, 3))).toBe(true);
+    expect(getDirectedUpgradeCost(5, 7).eq(getDirectedUpgradeCost(99, 7))).toBe(true);
+  });
+
+  it('cache funciona: chamadas repetidas retornam mesmo Decimal lógico', () => {
+    const a = getDirectedUpgradeCost(1, 10);
+    const b = getDirectedUpgradeCost(1, 10);
+    // 11! = 39916800
+    expect(a.toNumber()).toBe(39916800);
+    expect(b.toNumber()).toBe(39916800);
   });
 });
 
@@ -75,11 +84,17 @@ describe('upgrades / efetivo combinado', () => {
 });
 
 describe('upgrades / Decimal robustness', () => {
-  it('custo direcionado em níveis altos usa Decimal corretamente', () => {
-    // Em L=50, 3^50 estoura double mas Decimal aguenta.
-    // 5 × 3^50 ≈ 5 × 7.18e23 = 3.59e24
-    const cost = getDirectedUpgradeCost(1, 50);
-    expect(cost.toNumber()).toBeGreaterThan(3e24);
-    expect(cost.toNumber()).toBeLessThan(4e24);
+  it('custo em níveis muito altos cresce de forma monotônica e sem overflow', () => {
+    // 50! ≈ 3e64 — cabe em Decimal (e em double inclusive como Number).
+    const cost50 = getDirectedUpgradeCost(1, 49);
+    expect(cost50.toNumber()).toBeGreaterThan(3e64);
+    expect(cost50.toNumber()).toBeLessThan(4e64);
+  });
+
+  it('custo em níveis astronômicos ainda é finito (Decimal não estoura)', () => {
+    // 200! ≈ 7.88e374 — estoura double mas o Decimal carrega.
+    const cost = getDirectedUpgradeCost(1, 199);
+    expect(cost.gt(0)).toBe(true);
+    expect(cost.log10().toNumber()).toBeGreaterThan(370);
   });
 });

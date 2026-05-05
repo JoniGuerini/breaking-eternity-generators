@@ -52,7 +52,8 @@
    * o bloqueado sobrescreve abaixo.
    */
   content-visibility: auto;
-  contain-intrinsic-size: auto 168px;
+  /* +20px aprox pra acomodar a barra de progresso de marco. */
+  contain-intrinsic-size: auto 188px;
 }
 
 /* Card bloqueado — outro material. Frio, neutro, sem peso visual: sinaliza
@@ -160,6 +161,21 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 24px;
+}
+
+/* Bloco "Próximo marco" — label sutil + barra fina abaixo, encaixada
+ * entre o head e os metrics. Sem separadores próprios pra não fragmentar
+ * demais o card; o respiro do `gap` do `.gen-card` já basta. */
+.gen-card__milestone {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gen-card__milestone-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
 }
 
 .gen-card__sep {

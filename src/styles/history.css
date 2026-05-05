@@ -165,6 +165,10 @@
   color: var(--history-unlock);
 }
 
+.history-row--milestone_claimed .history-row__title {
+  color: var(--history-milestone);
+}
+
 .history-row--offline_gain .history-row__title {
   color: var(--history-offline);
 }

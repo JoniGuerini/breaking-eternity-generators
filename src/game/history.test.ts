@@ -6,6 +6,7 @@ import {
   loadHistory,
   recordGeneratorBought,
   recordGeneratorUnlocked,
+  recordMilestoneClaimed,
   recordOfflineGain,
   recordSaveStart,
   recordUpgradeBought,
@@ -188,5 +189,41 @@ describe('history / persistência', () => {
     expect(getHistorySnapshot().length).toBe(2);
     clearHistory();
     expect(getHistorySnapshot().length).toBe(0);
+  });
+});
+
+describe('history / milestones', () => {
+  it('marcos contíguos do mesmo gerador agregam', () => {
+    vi.setSystemTime(new Date('2026-01-01T00:00:00Z'));
+    recordMilestoneClaimed(1, 1);
+    vi.advanceTimersByTime(100);
+    recordMilestoneClaimed(1, 2);
+    vi.advanceTimersByTime(100);
+    recordMilestoneClaimed(1, 3);
+
+    const events = getHistorySnapshot();
+    expect(events.length).toBe(1);
+    const ev = events[0];
+    if (ev.kind !== 'milestone_claimed') throw new Error('kind incorreto');
+    expect(ev.fromTier).toBe(0);
+    expect(ev.toTier).toBe(3);
+  });
+
+  it('marcos de geradores diferentes NÃO agregam', () => {
+    vi.setSystemTime(new Date('2026-01-01T00:00:00Z'));
+    recordMilestoneClaimed(1, 1);
+    vi.advanceTimersByTime(100);
+    recordMilestoneClaimed(2, 1);
+    expect(getHistorySnapshot().length).toBe(2);
+  });
+
+  it('marcos não-contíguos do mesmo gerador NÃO agregam', () => {
+    // Gap defensivo — se algum bug fizer um tier ser pulado, queremos ver
+    // duas linhas em vez de uma agregação enganosa.
+    vi.setSystemTime(new Date('2026-01-01T00:00:00Z'));
+    recordMilestoneClaimed(1, 1);
+    vi.advanceTimersByTime(100);
+    recordMilestoneClaimed(1, 5);
+    expect(getHistorySnapshot().length).toBe(2);
   });
 });

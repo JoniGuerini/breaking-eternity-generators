@@ -20,17 +20,34 @@ header {
  * Visualmente acima dos cards de gerador: borda mais clara, leve glow âmbar
  * no fundo, padding generoso. NÃO usa o mesmo estilo dos `.generator` pra
  * evitar virar "só mais um card".
+ *
+ * O painel comporta dois blocos:
+ *   - `.resource-main`  → Recurso Base (protagonista, à esquerda)
+ *   - `.upgrade-points-chip` → Pontos de Melhoria (chip compacto, à direita)
+ *
+ * O `gap` grande + `margin-left: auto` no chip empurra os dois pras pontas
+ * mantendo um respiro visual. Em telas estreitas, o `flex-wrap` deixa o
+ * chip cair pra próxima linha sem cortar.
  */
 
 .resource-block {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 22px;
   flex-wrap: wrap;
   padding: 24px 28px;
   border: 1px solid var(--border-bright);
   border-radius: var(--radius);
   background: var(--bg-elevated);
+}
+
+.resource-main {
+  display: flex;
+  align-items: baseline;
+  gap: 22px;
+  flex-wrap: wrap;
+  /* Continua sendo o bloco principal — ocupa o espaço disponível e empurra
+   * o chip de PM pra direita via `margin-left: auto` (no chip). */
 }
 
 .resource-label {
@@ -53,4 +70,54 @@ header {
   font-family: var(--font-mono);
   font-size: 13px;
   color: var(--text-dim);
+}
+
+/* ---------- Chip de Pontos de Melhoria ----------
+ *
+ * Recurso secundário: padding mais apertado, valor menor, cor do `--text`
+ * ao invés de `--accent-strong`. Separa-se visualmente do bloco principal
+ * via uma borda esquerda fininha em vez de um card próprio (manter
+ * minimalismo).
+ */
+
+.upgrade-points-chip {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  padding-left: 22px;
+  border-left: 1px solid var(--border);
+  /* No header já tem padding generoso; aqui não duplicamos vertical. */
+}
+
+.upgrade-points-chip__label {
+  color: var(--text-mute);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.upgrade-points-chip__value {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* Quando o painel quebra (telas estreitas), o chip volta pra alinhamento à
+ * esquerda e perde a borda lateral — caso contrário fica órfão sem o
+ * irmão visível ao lado. */
+@media (max-width: 640px) {
+  .upgrade-points-chip {
+    margin-left: 0;
+    align-items: flex-start;
+    padding-left: 0;
+    padding-top: 12px;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    width: 100%;
+  }
 }
