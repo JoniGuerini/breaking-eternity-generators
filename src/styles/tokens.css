@@ -71,6 +71,32 @@
   --font-display: 'Fraunces', serif;
   --font-mono: 'JetBrains Mono', monospace;
   --font-body: 'Inter', sans-serif;
+
+  /*
+   * ─── Cores semânticas do histórico ───
+   *
+   * Cada categoria de evento tem uma cor "âncora" pra leitura rápida do
+   * log. No DARK e no LIGHT (clássicos), o `--accent`/`--success` são
+   * neutros (branco/preto/cinza), então tudo ficaria cinza-claro. Por
+   * isso aqui usamos VALORES FIXOS distintos por categoria — paleta
+   * sutil mas legível, mantendo o "espírito monocromático" do dark.
+   *
+   * Os demais temas (Coleção) sobrescrevem essas tokens nos próprios
+   * blocos `[data-theme=...]` quando faz sentido (ex.: temas com accent
+   * já colorido podem manter `--history-buy: var(--accent)`).
+   *
+   * Decisões pra DARK:
+   *   buy      → azul céu suave   #7fb3d9
+   *   upgrade  → âmbar/dourado     #d9b870
+   *   unlock   → verde menta       #8fcfa0
+   *   offline  → cinza azulado     #8a99a8
+   *   start    → branco neutro     var(--text)
+   */
+  --history-buy: #7fb3d9;
+  --history-upgrade: #d9b870;
+  --history-unlock: #8fcfa0;
+  --history-offline: #8a99a8;
+  --history-start: var(--text);
 }
 
 /*
@@ -138,6 +164,17 @@
   --mute-tint: rgba(154, 149, 138, 0.18);
   --danger-border: rgba(194, 95, 79, 0.45);
   --backdrop: rgba(245, 243, 238, 0.78);
+
+  /*
+   * Cores do histórico no Light — tons mais escuros e saturados pra
+   * contraste sobre off-white, mantendo a mesma "família" do dark
+   * (azul/âmbar/verde/cinza/preto) ajustada pro fundo claro.
+   */
+  --history-buy: #2c5d8a;       /* azul-índigo */
+  --history-upgrade: #a07533;    /* âmbar/dourado escuro */
+  --history-unlock: #3d7a4f;     /* verde-musgo */
+  --history-offline: #5d6b78;    /* cinza azulado */
+  --history-start: var(--text);  /* preto neutro forte */
 }
 
 /*
@@ -152,6 +189,28 @@
  * Bordas: cinza-azulado, mais visíveis que no dark default porque o
  * fundo é menos preto.
  */
+/*
+ * Pra todos os temas da Coleção (de Midnight em diante), as cores do
+ * histórico são derivadas dos próprios tokens do tema — assim cada tema
+ * tem sua identidade individual no log também. Aplicado via uma única
+ * regra que casa todos os temas EXCETO dark (`:root`) e light (que têm
+ * seus próprios conjuntos definidos). O fluxo:
+ *
+ *   1. `:root` declara cores DARK específicas pro histórico.
+ *   2. `[data-theme='light']` sobrescreve com cores LIGHT específicas.
+ *   3. Esta regra alvo de seleção `[data-theme]:not([data-theme='light'])`
+ *      sobrescreve os tokens DARK herdados pelos temas da Coleção,
+ *      apontando-os pros tokens semânticos do próprio tema (`--accent`,
+ *      `--success`, etc.) — assim cada tema usa sua paleta.
+ */
+[data-theme]:not([data-theme='light']) {
+  --history-buy: var(--accent);
+  --history-upgrade: var(--accent-strong);
+  --history-unlock: var(--success);
+  --history-offline: var(--text-dim);
+  --history-start: var(--text);
+}
+
 [data-theme='midnight'] {
   --bg: #0b1220;
   --bg-card: #152033;

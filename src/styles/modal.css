@@ -42,6 +42,41 @@
   flex-direction: column;
 }
 
+/*
+ * Variante "tela cheia" usada pelo modal de melhorias. Ocupa quase toda
+ * a viewport (apenas o padding de 10px do backdrop limita as bordas) e
+ * oferece um cabeçalho fixo + área de conteúdo rolável.
+ *
+ * Precisa estar AQUI (e não em upgrades.css) porque tanto `.modal` quanto
+ * `.modal--upgrades` têm 1 classe de especificidade — pra a variante
+ * sobrescrever as defaults (`max-width: 440px`, `padding: 28px 32px 24px`),
+ * tem que vir DEPOIS no mesmo arquivo. Se ficasse em outro arquivo
+ * importado antes do modal.css, a base ganhava por ordem.
+ */
+.modal--upgrades {
+  max-width: none;
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  /*
+   * Usa o fundo do app (NÃO o `--bg-card`). Os cards internos do modal
+   * usam `--bg-card` — se o container fosse igual a eles, virariam um
+   * "mar" de cards sem hierarquia. Trocando pro `--bg` o modal vira um
+   * "palco" e cada card fica destacado em cima dele, mesma relação que
+   * existe na tela principal entre o app e os cards de gerador.
+   */
+  background: var(--bg);
+}
+
+/* O backdrop do modal de upgrades usa padding menor que o default —
+ * a ideia é que o dialog "encoste" quase nas bordas da viewport. */
+.modal-backdrop--upgrades {
+  padding: 10px;
+}
+
 .modal-title {
   font-family: var(--font-display);
   font-size: 22px;

@@ -1,7 +1,8 @@
-import { memo } from 'react';
+import { memo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import type Decimal from 'break_eternity.js';
-import { useGameStore } from '../game/store';
+import { getEffectiveProductionRate, useGameStore } from '../game/store';
+import { useHoldToRepeat } from '../hooks/useHoldToRepeat';
 import { formatInt, formatNum } from '../utils/format';
 import { toRoman } from '../utils/roman';
 import { ProgressBar } from './ProgressBar';
@@ -57,7 +58,11 @@ export function GeneratorCard({ generatorId }: GeneratorCardProps) {
 
   const cost = computeCost(gen.baseCost, gen.costMultiplier, gen.purchases);
   const affordable = state.resource.gte(cost);
-  const totalRate = gen.count.mul(gen.productionRate);
+  // Taxa total considerando upgrades — sem isso, comprar uma melhoria
+  // dobra a produção REAL no loop, mas a UI continua mostrando o rate
+  // base, dando a impressão de que a melhoria não fez nada.
+  const effectiveRate = getEffectiveProductionRate(gen, state.upgrades);
+  const totalRate = gen.count.mul(effectiveRate);
 
   return (
     <UnlockedCard
@@ -102,6 +107,12 @@ const UnlockedCard = memo(function UnlockedCard({
       ? t('resource.label')
       : t('generator.name', { id: generatorId - 1 });
 
+  // Press-and-hold = compra em série. A própria store falha silenciosamente
+  // se o jogador ficar sem recurso no meio do hold — o loop continua e
+  // retoma quando voltar a poder pagar.
+  const onAction = useCallback(() => buy(generatorId), [buy, generatorId]);
+  const { handlers } = useHoldToRepeat({ onAction });
+
   return (
     <div className={`generator${hasCount ? ' has-count' : ''}`}>
       <div className="gen-card">
@@ -137,11 +148,16 @@ const UnlockedCard = memo(function UnlockedCard({
 
         <hr className="gen-card__sep" />
 
+        {/*
+         * Botão sem `onClick` — `useHoldToRepeat` cobre o caso do clique
+         * curto via mousedown→mouseup. Adicionar onClick também causaria
+         * compra dupla (touch dispara click sintético no fim).
+         */}
         <button
           type="button"
           className="btn btn--primary gen-card__action"
           disabled={!affordable}
-          onClick={() => buy(generatorId)}
+          {...handlers}
         >
           <span>{affordable ? t('actions.buy') : t('actions.insufficientResource')}</span>
           <span className={`gen-cost${affordable ? ' affordable' : ''}`}>{costLabel}</span>

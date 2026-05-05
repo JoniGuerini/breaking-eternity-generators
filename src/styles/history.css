@@ -1,0 +1,195 @@
+/*
+ * Histórico de eventos — modal full-screen reutilizando a variante
+ * `.modal--upgrades` do modal.css. Aqui ficam só os elementos próprios
+ * do histórico: chips de filtro, lista de eventos e linhas individuais.
+ *
+ * Layout estilo "chat":
+ *   - JSX renderiza em ordem cronológica natural (antigo → novo).
+ *   - O container da lista é flex column com `justify-content: flex-end`
+ *     — assim as mensagens ficam ANCORADAS NO FUNDO. Com poucas
+ *     entradas elas grudam no rodapé do modal; quando enche, o flow
+ *     cresce naturalmente pra cima e o scroll do container externo
+ *     leva o usuário até o fim.
+ *   - O scroll é gerenciado em JS no `HistoryModal`: ao abrir, força
+ *     `scrollTop = scrollHeight` (rola pra última mensagem). Quando
+ *     uma nova mensagem chega, se o usuário está perto do fim, rola
+ *     pra acompanhar; se rolou pra cima pra ler antigas, NÃO interrompe.
+ *
+ * Visual: texto puro. Sem cards, sem ícones em quadrado, sem borda
+ * lateral. Cada linha é apenas tipo + descrição colorida + tempo.
+ */
+
+/* ─────────── Filter chips ─────────── */
+
+.history-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 12px 32px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.history-chip {
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.history-chip:hover:not(.is-active) {
+  color: var(--text);
+  border-color: var(--border-bright);
+}
+
+.history-chip.is-active {
+  color: var(--bg);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ─────────── Container (ancorado no fundo) ─────────── */
+
+/*
+ * Override do default do `.upgrades-modal__content`: usamos `display: flex`
+ * com `flex-direction: column` pra que o filho (lista) possa usar
+ * `margin-top: auto` e grudar no rodapé quando há poucas mensagens.
+ *
+ * Por que NÃO `justify-content: flex-end` no container?
+ *   Porque quando o conteúdo excede a altura, flexbox comprime o início
+ *   no overflow e o scrollTop fica preso em 0 — o usuário não consegue
+ *   rolar pra ver mensagens antigas. Já `margin-top: auto` no filho
+ *   colapsa naturalmente quando a lista cresce, restaurando o scroll
+ *   normal.
+ */
+.history-modal__content {
+  padding: 16px 32px 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  /*
+   * Empurra a lista pro fundo quando ela é menor que o container
+   * (poucas mensagens → grudam no rodapé do modal). Quando a lista
+   * cresce além da altura disponível, o `auto` colapsa pra 0 e o
+   * comportamento de scroll natural reaparece.
+   */
+  margin-top: auto;
+  flex: 0 0 auto;
+  gap: 0;
+}
+
+/* ─────────── Linha individual (texto puro) ─────────── */
+
+.history-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 14px;
+  padding: 7px 0;
+  /* Sem fundo, sem borda lateral, sem ícone. Visual de log textual. */
+  background: transparent;
+  /* Performance: linhas offscreen pulam paint. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 32px;
+}
+
+.history-row__main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+/*
+ * Título: cor por tipo. Como o token `--history-<kind>` é definido em
+ * tokens.css por tema, esta classe não precisa mudar quando o tema
+ * troca — herda automaticamente.
+ *
+ * Tamanho um pouco maior que o detalhe pra dar peso visual à
+ * "ação principal". Sem text-overflow ellipsis aqui — em modo chat
+ * a linha quebra naturalmente em telas estreitas (wrap no __main).
+ */
+.history-row__title {
+  font-size: 13.5px;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.history-row__detail {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.02em;
+}
+
+.history-row__time {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-mute);
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+/* ─────────── Cores por tipo ─────────── */
+
+/*
+ * O título recebe a cor semântica do evento. Tudo derivado de tokens
+ * (`--history-buy`, `--history-upgrade`, etc.) — o esquema completo
+ * é definido em tokens.css por tema, então cada tema pode ter cores
+ * diferentes sem mexer aqui.
+ */
+.history-row--generator_bought .history-row__title {
+  color: var(--history-buy);
+}
+
+.history-row--upgrade_bought .history-row__title {
+  color: var(--history-upgrade);
+}
+
+.history-row--generator_unlocked .history-row__title {
+  color: var(--history-unlock);
+}
+
+.history-row--offline_gain .history-row__title {
+  color: var(--history-offline);
+}
+
+.history-row--save_start .history-row__title {
+  color: var(--history-start);
+}
+
+/* ─────────── Responsivo ─────────── */
+
+@media (max-width: 600px) {
+  .history-filters {
+    padding: 10px 18px 12px;
+  }
+
+  .history-modal__content {
+    padding: 12px 18px;
+  }
+
+  .history-row {
+    padding: 6px 0;
+    gap: 8px;
+  }
+
+  .history-row__title {
+    font-size: 13px;
+  }
+}

@@ -1,6 +1,8 @@
 import Decimal from 'break_eternity.js';
 import { D, SAVE_KEY, createGenerator } from './config';
-import type { GameState, SaveData } from './types';
+import { loadHistory, serializeHistory } from './history';
+import { makeEmptyUpgradeState } from './types';
+import type { GameState, SaveData, UpgradeState } from './types';
 
 export interface LoadedGameState {
   state: GameState;
@@ -17,6 +19,7 @@ export function makeFreshState(): GameState {
     resource: D(1),
     generators: [createGenerator(1, true), createGenerator(2, false)],
     startedAt: Date.now(),
+    upgrades: makeEmptyUpgradeState(),
   };
 }
 
@@ -37,7 +40,39 @@ export function serialize(state: GameState): SaveData {
       purchases: g.purchases,
       unlocked: g.unlocked,
     })),
+    upgrades: state.upgrades,
+    // O histórico vive em módulo separado (não na GameState principal),
+    // mas é persistido junto com o save pra simplificar a vida do
+    // usuário: 1 storage key, 1 reset, 1 export futuro.
+    history: serializeHistory(),
   };
+}
+
+/**
+ * Aceita um valor do JSON e tenta convertê-lo num UpgradeState válido.
+ * Permissivo: qualquer chave/valor inesperado é ignorado, defaults
+ * vazios. Mantém o save resiliente a corrupção parcial e a saves
+ * anteriores ao sistema de upgrades.
+ */
+function coerceUpgradeState(raw: unknown): UpgradeState {
+  const empty = makeEmptyUpgradeState();
+  if (!raw || typeof raw !== 'object') return empty;
+  const obj = raw as Record<string, unknown>;
+
+  const directedLevels: Record<number, number> = {};
+  if (obj.directedLevels && typeof obj.directedLevels === 'object') {
+    for (const [k, v] of Object.entries(obj.directedLevels as Record<string, unknown>)) {
+      const n = Number(k);
+      if (Number.isInteger(n) && n > 0 && typeof v === 'number' && v >= 0) {
+        directedLevels[n] = v | 0;
+      }
+    }
+  }
+
+  // `globalsBought` / `milestonesUnlocked` ficaram em saves antigos durante
+  // o experimento de classes adicionais. Hoje são ignorados — o save se
+  // auto-limpa no próximo persist.
+  return { directedLevels };
 }
 
 /**
@@ -49,6 +84,11 @@ export function loadWithMeta(): LoadedGameState | null {
     if (!raw) return null;
     const data = JSON.parse(raw) as Partial<SaveData>;
     if (!data || data.version !== 1 || !Array.isArray(data.generators)) return null;
+
+    // Reidrata o histórico ANTES de retornar o GameState — garante que
+    // qualquer evento gravado durante boot (ex.: offline gain calculado
+    // logo após este load) seja anexado a um log já populado.
+    loadHistory(data.history);
 
     return {
       state: {
@@ -62,6 +102,8 @@ export function loadWithMeta(): LoadedGameState | null {
         // Retro-compat: saves antigos sem `startedAt` ganham `now` como fallback.
         // Tempo de jogo passa a contar a partir do primeiro carregamento pós-update.
         startedAt: typeof data.startedAt === 'number' ? data.startedAt : Date.now(),
+        // Retro-compat: saves anteriores ao sistema de upgrades começam com tudo zerado.
+        upgrades: coerceUpgradeState(data.upgrades),
       },
       lastSavedAt: typeof data.ts === 'number' ? data.ts : Date.now(),
     };

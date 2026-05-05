@@ -28,7 +28,32 @@ export interface GameState {
   /** Timestamp (Date.now()) do primeiro boot deste save. Usado pra calcular
    *  o tempo total de jogo (wall clock, inclui offline). */
   startedAt: number;
+  /** Estado de upgrades do jogador. Ver UpgradeState. */
+  upgrades: UpgradeState;
 }
+
+/* ─────────── Upgrades ─────────── */
+
+/**
+ * Estado de upgrades persistido.
+ *
+ *  - `directedLevels[N]` (number): quantas vezes o boost direcionado do
+ *    Gen N foi comprado. Ausência == 0.
+ *
+ * O tipo é deliberadamente um objeto (em vez de só `Record<number, number>`)
+ * pra deixar espaço pra novas classes no futuro sem migração de save.
+ */
+export interface UpgradeState {
+  directedLevels: Record<number, number>;
+}
+
+export function makeEmptyUpgradeState(): UpgradeState {
+  return {
+    directedLevels: {},
+  };
+}
+
+/* ─────────── Save ─────────── */
 
 /**
  * Forma serializada do save.
@@ -47,4 +72,12 @@ export interface SaveData {
     purchases: number;
     unlocked: boolean;
   }>;
+  /** Opcional pra retro-compat com saves anteriores ao sistema de upgrades. */
+  upgrades?: UpgradeState;
+  /**
+   * Opcional pra retro-compat com saves anteriores ao sistema de histórico.
+   * Tipado como `unknown[]` pra evitar import cíclico de history.ts em
+   * types.ts; o módulo history valida a forma item-a-item ao carregar.
+   */
+  history?: unknown[];
 }

@@ -23,6 +23,58 @@
     "tier": "Tier",
     "unlocksWith": "Desbloqueia com"
   },
+  "upgrades": {
+    "open": "Melhorias",
+    "openAriaLabel": "Abrir melhorias",
+    "closeAriaLabel": "Fechar melhorias",
+    "modalTitle": "Melhorias",
+    "modalBody": "Boosts permanentes para cada gerador. Cada nível dobra a produção do gerador escolhido. Custo triplica a cada compra.",
+    "empty": "Desbloqueie um gerador para começar a comprar melhorias.",
+    "directed": {
+      "title": "Boost · {{gen}}",
+      "level": "Nível {{level}}",
+      "effect": "Cada nível dobra a produção deste gerador."
+    }
+  },
+  "history": {
+    "open": "Histórico",
+    "openAriaLabel": "Abrir histórico",
+    "closeAriaLabel": "Fechar histórico",
+    "modalTitle": "Histórico",
+    "modalBody": "Tudo o que aconteceu nesta partida — compras, desbloqueios, ganho offline e reinícios.",
+    "empty": "Nenhum evento registrado ainda. Compre algo para começar a popular o histórico.",
+    "filtersAriaLabel": "Filtros do histórico",
+    "filters": {
+      "all": "Tudo",
+      "purchases": "Compras",
+      "upgrades": "Melhorias",
+      "unlocks": "Desbloqueios",
+      "system": "Sistema"
+    },
+    "events": {
+      "generatorBoughtOne": "Comprou {{gen}}",
+      "generatorBoughtMany": "Comprou ×{{count}} {{gen}}",
+      "upgradeBoughtOne": "Melhoria de {{gen}} subiu para nível {{level}}",
+      "upgradeBoughtMany": "Melhoria de {{gen}} subiu ×{{count}} (nível {{level}})",
+      "generatorUnlocked": "{{gen}} desbloqueado",
+      "offlineGain": "Progresso offline ({{duration}})",
+      "gained": "+{{amount}}",
+      "spent": "−{{amount}}",
+      "saveStartFresh": "Início da partida",
+      "saveStartReset": "Início da partida (após reiniciar)"
+    },
+    "relative": {
+      "now": "agora",
+      "seconds_one": "há {{count}}s",
+      "seconds_other": "há {{count}}s",
+      "minutes_one": "há {{count}} min",
+      "minutes_other": "há {{count}} min",
+      "hours_one": "há {{count}}h",
+      "hours_other": "há {{count}}h",
+      "days_one": "há {{count}}d",
+      "days_other": "há {{count}}d"
+    }
+  },
   "playtime": {
     "label": "Tempo de jogo",
     "ariaLabel": "Tempo de jogo",

@@ -44,8 +44,21 @@
   text-transform: uppercase;
 }
 
-.app-sidebar__reset {
+/*
+ * Menu vertical de ações dentro da sidebar (Reiniciar, Melhorias).
+ * Cada item é um `.btn--link` sutil; alinhados à esquerda, gap pequeno
+ * pra parecerem opções relacionadas, não botões soltos.
+ */
+.app-sidebar__menu {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
   margin-top: 4px;
+}
+
+.app-sidebar__menu-item {
+  text-align: left;
 }
 
 .app-sidebar__footer {
@@ -143,6 +156,15 @@
     flex: 1;
     flex-wrap: wrap;
     gap: 16px;
+  }
+
+  /* No modo empilhado, o menu de ações vira linha horizontal pra caber
+   * lado a lado com o título sem dobrar várias linhas. */
+  .app-sidebar__menu {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 14px;
+    margin-top: 0;
   }
 
   /* Versão (`v0.1`) some no empilhado pra não poluir o header inline; o

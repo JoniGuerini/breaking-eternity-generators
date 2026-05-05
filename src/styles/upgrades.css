@@ -1,0 +1,204 @@
+/*
+ * Modal de melhorias e cards de upgrade.
+ *
+ * O dialog em si é estilizado em modal.css (variante .modal--upgrades) —
+ * aqui ficam só os elementos internos: cabeçalho, conteúdo rolável e
+ * cards individuais.
+ *
+ * Os cards foram calibrados pra ficar com o MESMO tamanho dos cards de
+ * gerador (`.generator`), pra coerência visual: o jogador encontra a
+ * mesma "unidade" de card no modal de melhorias e na lista principal.
+ */
+
+/* ─────────── Cabeçalho do modal ─────────── */
+
+/*
+ * Cabeçalho fixo no topo: título + subtítulo à esquerda, botão de
+ * fechar à direita. Não rola junto com o grid.
+ */
+.upgrades-modal__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px 32px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.upgrades-modal__head .modal-title {
+  margin-bottom: 6px;
+}
+
+.upgrades-modal__subtitle {
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 60ch;
+}
+
+/*
+ * Botão "×" estilo discreto. Hit area generosa (32×32) sem visual
+ * destacado — é uma alternativa ao ESC, não a ação principal.
+ */
+.upgrades-modal__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: var(--text-mute);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.15s ease;
+  border-radius: 0;
+  flex-shrink: 0;
+}
+
+.upgrades-modal__close:hover {
+  color: var(--text);
+}
+
+/* ─────────── Conteúdo rolável ─────────── */
+
+/*
+ * Área scrollável que segura a grade de cards. Mesma estratégia da
+ * `.generators` — única região rolável dentro do modal, sem barra
+ * visível, sem bounce externo.
+ */
+.upgrades-modal__content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 24px 32px 40px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.upgrades-modal__content::-webkit-scrollbar {
+  display: none;
+}
+
+.upgrades-modal__empty {
+  color: var(--text-dim);
+  font-size: 14px;
+  line-height: 1.55;
+  text-align: center;
+  margin: 48px 0;
+}
+
+/*
+ * Grade de cards: minmax 320px casa com a largura natural de um card
+ * de gerador. Em telas largas o `auto-fill` cria 3-4 colunas; em telas
+ * estreitas vira 1 coluna sem precisar de media query.
+ */
+.upgrades-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 10px;
+  /* Cards alinhados ao topo da grade: com poucos itens, NÃO esticamos
+   * pra preencher o espaço — preserva a altura natural do card. */
+  align-content: start;
+}
+
+/* ─────────── Card de upgrade ─────────── */
+
+/*
+ * Mesmo "shell" visual do `.generator` (ver generator-card.css):
+ *   - Mesmo bg, border, radius, padding (18px 22px).
+ *   - Layout vertical em 3 linhas com separadores, igual o gen-card.
+ *
+ * Por que repetir os valores em vez de aplicar a classe `.generator`?
+ * Porque o JSX precisa de uma classe distinta pra que estilos
+ * específicos do card de melhoria (head/effect/action) não vazem pros
+ * cards da lista principal.
+ */
+.upgrade-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  /* Performance: cards offscreen pulam layout/paint. Tamanho intrínseco
+   * aproximado pra evitar saltos de scroll. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 168px;
+}
+
+.upgrade-card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/*
+ * Título do card — mesmo Fraunces e tamanho do `.gen-name` (20px) pra
+ * leitura idêntica ao card de gerador.
+ */
+.upgrade-card__title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  flex: 1;
+  min-width: 0;
+}
+
+.upgrade-card__level {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent-strong);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+.upgrade-card__effect {
+  color: var(--text-dim);
+  font-size: 12.5px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/*
+ * Botão de ação ocupa toda a largura: rótulo à esquerda, custo à direita.
+ * Mesmo padrão do botão de comprar geradores.
+ */
+.upgrade-card__action {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.upgrade-card__cost {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+
+/* ─────────── Responsivo ─────────── */
+
+@media (max-width: 600px) {
+  .upgrades-modal__head {
+    padding: 20px 18px 16px;
+    gap: 12px;
+  }
+
+  .upgrades-modal__content {
+    padding: 16px 18px 32px;
+  }
+
+  .upgrades-grid {
+    grid-template-columns: 1fr;
+  }
+}

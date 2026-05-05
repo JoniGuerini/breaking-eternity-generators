@@ -11,8 +11,10 @@
  *   5. playtime-panel.css — painel de tempo/FPS no canto superior direito
  *   6. header.css        — barra superior e bloco de recurso
  *   7. generator-card.css — cards (desbloqueado e bloqueado)
- *   8. modal.css         — modal genérico + animações
- *   9. theme-selector.css — grade de cards do seletor de tema
+ *   8. upgrades.css      — modal de melhorias e cards de upgrade
+ *   9. modal.css         — modal genérico + animações
+ *  10. theme-selector.css — grade de cards do seletor de tema
+ *  11. history.css       — modal e linhas do histórico de eventos
  *
  * A ordem importa: camadas posteriores podem refinar (mas idealmente não
  * sobrescrever) camadas anteriores. Se você precisa de !important ou de
@@ -30,5 +32,7 @@
 @import './playtime-panel.css';
 @import './header.css';
 @import './generator-card.css';
+@import './upgrades.css';
 @import './modal.css';
 @import './theme-selector.css';
+@import './history.css';

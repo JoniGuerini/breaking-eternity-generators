@@ -23,6 +23,58 @@
     "tier": "Tier",
     "unlocksWith": "Unlocks at"
   },
+  "upgrades": {
+    "open": "Upgrades",
+    "openAriaLabel": "Open upgrades",
+    "closeAriaLabel": "Close upgrades",
+    "modalTitle": "Upgrades",
+    "modalBody": "Permanent boosts for each generator. Every level doubles the production of the chosen generator. Cost triples per purchase.",
+    "empty": "Unlock a generator to start buying upgrades.",
+    "directed": {
+      "title": "Boost · {{gen}}",
+      "level": "Level {{level}}",
+      "effect": "Each level doubles this generator's production."
+    }
+  },
+  "history": {
+    "open": "History",
+    "openAriaLabel": "Open history",
+    "closeAriaLabel": "Close history",
+    "modalTitle": "History",
+    "modalBody": "Everything that happened in this run — purchases, unlocks, offline progress and resets.",
+    "empty": "No events recorded yet. Buy something to start populating the log.",
+    "filtersAriaLabel": "History filters",
+    "filters": {
+      "all": "All",
+      "purchases": "Purchases",
+      "upgrades": "Upgrades",
+      "unlocks": "Unlocks",
+      "system": "System"
+    },
+    "events": {
+      "generatorBoughtOne": "Bought {{gen}}",
+      "generatorBoughtMany": "Bought ×{{count}} {{gen}}",
+      "upgradeBoughtOne": "{{gen}} upgrade reached level {{level}}",
+      "upgradeBoughtMany": "{{gen}} upgrade leveled ×{{count}} (level {{level}})",
+      "generatorUnlocked": "{{gen}} unlocked",
+      "offlineGain": "Offline progress ({{duration}})",
+      "gained": "+{{amount}}",
+      "spent": "−{{amount}}",
+      "saveStartFresh": "Run started",
+      "saveStartReset": "Run started (after reset)"
+    },
+    "relative": {
+      "now": "just now",
+      "seconds_one": "{{count}}s ago",
+      "seconds_other": "{{count}}s ago",
+      "minutes_one": "{{count}} min ago",
+      "minutes_other": "{{count}} min ago",
+      "hours_one": "{{count}}h ago",
+      "hours_other": "{{count}}h ago",
+      "days_one": "{{count}}d ago",
+      "days_other": "{{count}}d ago"
+    }
+  },
   "playtime": {
     "label": "Playtime",
     "ariaLabel": "Playtime",
