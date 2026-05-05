@@ -6,7 +6,7 @@
  *   - Desbloqueado: layout em 3 linhas via `.gen-card`
  *   - Bloqueado:    layout grid info|ação via `.gen-info` + `.gen-action`
  *
- * Tipografia (.label / .value / .target / .is-total) vem de typography.css
+ * Tipografia (.label / .value / .target / .is-total) vem de foundation.css
  * e é compartilhada com qualquer outro componente.
  */
 
