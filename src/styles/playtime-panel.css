@@ -25,6 +25,19 @@
   gap: 4px;
 }
 
+/*
+ * Linha secundária (FPS): alinhada com o bloco principal mas mais compacta.
+ * Empilha verticalmente no desktop (label em cima, valor embaixo) pra
+ * manter a mesma silhueta vertical da seção "tempo de jogo".
+ */
+.playtime-panel__row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  margin-top: 12px;
+}
+
 .playtime-panel__label {
   color: var(--text-mute);
   font-size: 12px;
@@ -38,6 +51,11 @@
   color: var(--text);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
+}
+
+.playtime-panel__value--small {
+  font-size: 14px;
+  color: var(--text-mute);
 }
 
 /*
@@ -56,17 +74,28 @@
     position: static;
     width: 100%;
     max-width: none;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: baseline;
     margin: 0 0 16px;
   }
 
-  .playtime-panel__top {
+  .playtime-panel__top,
+  .playtime-panel__row {
     flex-direction: row;
     align-items: baseline;
     gap: 12px;
   }
 
+  .playtime-panel__row {
+    margin-top: 0;
+    margin-left: 16px;
+  }
+
   .playtime-panel__value {
     font-size: 16px;
+  }
+
+  .playtime-panel__value--small {
+    font-size: 14px;
   }
 }

@@ -35,9 +35,27 @@ let isResetting = false;
  */
 let hiddenAt: number | null = null;
 
+/**
+ * Janela móvel de timestamps de frame (em `performance.now()`), usada pra
+ * calcular FPS instantâneo. Mantemos só os frames do último segundo: o FPS
+ * é o tamanho da janela após dropar entradas mais antigas que `now - 1000`.
+ *
+ * Array nativo é OK aqui — em 60Hz fica com no máximo ~60 entradas e
+ * `shift()` em um array pequeno é trivial.
+ */
+const frameTimestamps: number[] = [];
+const FPS_WINDOW_MS = 1000;
+
 function tick(now: number) {
   const dt = (now - lastTime) / 1000;
   lastTime = now;
+
+  // Janela móvel de 1s pra cálculo de FPS.
+  frameTimestamps.push(now);
+  const cutoff = now - FPS_WINDOW_MS;
+  while (frameTimestamps.length > 0 && frameTimestamps[0] < cutoff) {
+    frameTimestamps.shift();
+  }
 
   useGameStore.getState().applyTick(dt);
 
@@ -47,6 +65,14 @@ function tick(now: number) {
   }
 
   rafId = requestAnimationFrame(tick);
+}
+
+/**
+ * FPS instantâneo (frames nos últimos ~1s). Retorna 0 se o loop não estiver
+ * rodando ou se a aba acabou de voltar do background (janela ainda fria).
+ */
+export function getCurrentFps(): number {
+  return frameTimestamps.length;
 }
 
 function saveIfAllowed() {

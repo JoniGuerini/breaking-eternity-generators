@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../game/store';
+import { getCurrentFps } from '../game/loop';
 import { formatPlaytime, getPlaytimeSeconds } from '../utils/playtime';
 
 /**
@@ -18,9 +19,13 @@ export function PlaytimePanel() {
   const { t } = useTranslation();
   const startedAt = useGameStore((s) => s.startedAt);
   const [now, setNow] = useState(() => Date.now());
+  const [fps, setFps] = useState(() => getCurrentFps());
 
   useEffect(() => {
-    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    const id = window.setInterval(() => {
+      setNow(Date.now());
+      setFps(getCurrentFps());
+    }, 1000);
     return () => window.clearInterval(id);
   }, []);
 
@@ -45,6 +50,10 @@ export function PlaytimePanel() {
       <div className="playtime-panel__top">
         <div className="playtime-panel__label">{t('playtime.label')}</div>
         <div className="playtime-panel__value">{label}</div>
+      </div>
+      <div className="playtime-panel__row">
+        <div className="playtime-panel__label">{t('playtime.fps')}</div>
+        <div className="playtime-panel__value playtime-panel__value--small">{fps}</div>
       </div>
     </aside>
   );

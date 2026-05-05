@@ -38,7 +38,8 @@
       "centuries": "c",
       "millennia": "mil"
     },
-    "zero": "0s"
+    "zero": "0s",
+    "fps": "FPS"
   },
   "modal": {
     "resetTitle": "Reiniciar progresso?",
